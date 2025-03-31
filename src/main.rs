@@ -5,11 +5,12 @@ use std::env;
 
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
+use awc::Client;
 use dotenvy::dotenv;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
-use models::Cat;
+use models::{Account, Cat};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -33,6 +34,18 @@ fn initialize_db_pool() -> DbPool {
 
 struct Query;
 
+async fn get_account_from_api(region: String, name: String, tag: String) -> Result<Account, Error> {
+    let client = Client::new();
+    let api_key = std::env::var("RIOT_API_KEY").expect("RIOT_API_KEY should be set");
+    let req = client.get(format!("https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}"))
+        .insert_header(("User-Agent", "awc/3.0"))
+        .insert_header(("X-Riot-Token", api_key));
+
+    let mut res = req.send().await.unwrap();
+    let account = res.json::<Account>().await.unwrap();
+    Ok(account)
+}
+
 #[graphql_object]
 #[graphql(context = Context)]
 impl Query {
@@ -49,6 +62,34 @@ impl Query {
             .expect("Error loading cats");
         // Return the result.
         Ok(result_cat.get(0).unwrap().clone())
+    }
+}
+
+#[graphql_object]
+#[graphql(context = Context)]
+impl Query {
+    fn account(
+        game_name: String,
+        game_tag: String,
+        context: &Context,
+    ) -> FieldResult<Account> {
+        use self::schema::accounts::dsl::*;
+        let conn = &mut context.db.get().unwrap();
+        let result_acc: Vec<Account> = accounts
+            .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
+            .select(Account::as_select())
+            .load(conn)
+            .expect("Error loading account");
+
+        Ok(result_acc.get(0).unwrap().clone())
+        /*else {
+            let acc = get_account_from_api(String::from("europe"), game_name, game_tag).await.unwrap();
+            diesel::insert_into(accounts)
+                .values(acc.clone())
+                .execute(conn)
+                .expect("Error while saving account");
+            Ok(acc)
+        }*/
     }
 }
 
