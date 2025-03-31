@@ -16,7 +16,20 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    summoners (id) {
+        id -> Varchar,
+        icon -> Int4,
+        revision_date -> Timestamp,
+        level -> Int4,
+        puuid -> Varchar,
+    }
+}
+
+diesel::joinable!(summoners -> accounts (puuid));
+
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
     cats,
+    summoners,
 );

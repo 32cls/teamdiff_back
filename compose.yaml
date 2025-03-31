@@ -1,14 +1,14 @@
 services:
 
-  app:
-    depends_on:
-      - db
-    build:
-      dockerfile: Dockerfile
-    ports:
-      - 8080:8080
-    env_file:
-      - .env
+  #app:
+  #  depends_on:
+  #    - db
+  #  build:
+  #    dockerfile: Dockerfile
+  #  ports:
+  #    - 8080:8080
+  #  env_file:
+  #    - .env
   db:
     image: postgres
     restart: always
