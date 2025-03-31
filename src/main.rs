@@ -11,8 +11,12 @@ use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
 use models::Cat;
 use diesel::prelude::*;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
+type DB = diesel::pg::Pg;
+
 struct Context {
     db: DbPool,
 }
@@ -77,11 +81,18 @@ async fn homepage() -> impl Responder {
         )
 }
 
+fn run_migrations(connection: &mut impl MigrationHarness<DB>) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    connection.run_pending_migrations(MIGRATIONS)?;
+    Ok(())
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok(); 
     env::set_var("RUST_LOG", "info");
     env_logger::init();
+    let ctx = initialize_db_pool();
+    let _ = run_migrations(&mut ctx.get().unwrap());
 
     HttpServer::new(move || {
         App::new()
@@ -106,7 +117,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/graphiql").route(web::get().to(graphiql)))
             .default_service(web::to(homepage))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
