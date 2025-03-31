@@ -1,30 +1,31 @@
+pub mod models;
+pub mod schema;
 
-use juniper::{graphql_object, graphql_value, EmptyMutation, EmptySubscription, FieldResult, GraphQLEnum, GraphQLObject, RootNode, Variables};
+use std::env;
 
-#[derive(GraphQLEnum)]
-#[derive(Clone)]
-enum CatColors {
-    Orange,
-    Black,
-    Grey
-}
+use actix_cors::Cors;
+use actix_web::{http::header, middleware, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
+use dotenvy::dotenv;
+use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
+use diesel::{r2d2, PgConnection};
+use juniper_actix::{graphiql_handler, graphql_handler};
+use models::Cat;
+use diesel::prelude::*;
 
-#[derive(GraphQLObject)]
-#[graphql(description = "A very friendly animal")]
-#[derive(Clone)]
-struct Cat {
-    name: String,
-    color: CatColors
-}
-
+type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
 struct Context {
-    // Use your real database pool here.
-    cats: Vec<Cat>,
+    db: DbPool,
 }
 
-// To make our `Context` usable by `juniper`, we have to implement a marker 
-// trait.
 impl juniper::Context for Context {}
+
+fn initialize_db_pool() -> DbPool {
+    let conn_spec = std::env::var("DATABASE_URL").expect("DATABASE_URL should be set");
+    let manager = r2d2::ConnectionManager::<PgConnection>::new(conn_spec);
+    r2d2::Pool::builder()
+        .build(manager)
+        .expect("Error connecting to the database")
+}
 
 struct Query;
 
@@ -32,44 +33,80 @@ struct Query;
 #[graphql(context = Context)]
 impl Query {
     fn cat(
-        // Arguments to resolvers can either be simple scalar types, enums or 
-        // input objects.
-        name: String,
-        // To gain access to the `Context`, we specify a `context`-named 
-        // argument referring the correspondent `Context` type, and `juniper`
-        // will inject it automatically.
+        nickname: String,
         context: &Context,
     ) -> FieldResult<Cat> {
-        let cat = context.cats.iter().find(|c| c.name == name).unwrap();
+        use self::schema::cats::dsl::*;
+        let conn = &mut context.db.get().unwrap();
+        let result_cat = cats
+            .filter(name.eq(nickname))
+            .select(Cat::as_select())
+            .load(conn)
+            .expect("Error loading cats");
         // Return the result.
-        Ok(cat.clone())
+        Ok(result_cat.get(0).unwrap().clone())
     }
 }
 
 type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
-fn main() {
-    let mut cats = Vec::new();
-    cats.push(Cat { name: "Lili".to_string(), color: CatColors::Black});
-    cats.push(Cat { name: "Lulu".to_string(), color: CatColors::Grey});
-    // Create a context.
-    let ctx = Context {cats: cats};
 
-    // Run the execution.
-    let (res, _errors) = juniper::execute_sync(
-        "query { cat (name: \"Lili\") { name, color }}",
-        None,
-        &Schema::new(Query, EmptyMutation::new(), EmptySubscription::new()),
-        &Variables::new(),
-        &ctx,
-    ).unwrap();
+fn schema() -> Schema {
+    Schema::new(Query, EmptyMutation::<Context>::new(), EmptySubscription::<Context>::new())
+}
 
-    assert_eq!(
-        res,
-        graphql_value!({
-            "cat": {
-                "name": "Lili",
-                "color": "BLACK"
-            }
-        }),
-    );
+async fn graphiql() -> Result<HttpResponse, Error> {
+    graphiql_handler("/graphql", Some("/subscriptions")).await
+}
+
+async fn graphql(
+    req: HttpRequest,
+    payload: web::Payload,
+    schema: Data<Schema>,
+) -> Result<HttpResponse, Error> {
+    let ctx = Context {db: initialize_db_pool()};
+    graphql_handler(&schema, &ctx, req, payload).await
+}
+
+async fn homepage() -> impl Responder {
+    HttpResponse::Ok()
+        .insert_header(("content-type", "text/html"))
+        .message_body(
+            "<html><h1>juniper_actix/subscription example</h1>\
+                   <div>visit <a href=\"/graphiql\">GraphiQL</a></div>\
+             </html>",
+        )
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    dotenv().ok(); 
+    env::set_var("RUST_LOG", "info");
+    env_logger::init();
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(Data::new(schema()))
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allowed_methods(vec!["POST", "GET"])
+                    .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+                    .allowed_header(header::CONTENT_TYPE)
+                    .supports_credentials()
+                    .max_age(3600),
+            )
+            .wrap(middleware::Compress::default())
+            .wrap(middleware::Logger::default())
+            //.service(web::resource("/subscriptions").route(web::get().to(subscriptions)))
+            .service(
+                web::resource("/graphql")
+                    .route(web::post().to(graphql))
+                    .route(web::get().to(graphql)),
+            )
+            .service(web::resource("/graphiql").route(web::get().to(graphiql)))
+            .default_service(web::to(homepage))
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
