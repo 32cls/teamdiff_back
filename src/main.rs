@@ -1,15 +1,18 @@
 pub mod models;
 pub mod schema;
+pub mod graphql;
+pub mod dto;
 
 use std::env;
-
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, rt::{task, Runtime}, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
+use dto::AccountDto;
+use graphql::GqlAccount;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
-use models::{Account, AccountDto};
+use models::Account;
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use reqwest::ClientBuilder;
@@ -56,7 +59,7 @@ impl Query {
         game_name: String,
         game_tag: String,
         context: &Context,
-    ) -> FieldResult<Account> {
+    ) -> FieldResult<GqlAccount> {
         use self::schema::accounts::dsl::*;
         let conn = &mut context.db.get().unwrap();
         let result_acc: Vec<Account> = accounts
@@ -87,9 +90,9 @@ impl Query {
                     .execute(conn)
                     .expect("Error while saving account");
             }
-            Ok(acc)
+            Ok(GqlAccount::from_db(&acc, conn))
         } else {
-            Ok(result_acc.get(0).unwrap().clone())
+            Ok(GqlAccount::from_db(result_acc.get(0).unwrap(),conn))
         }
     }
 }

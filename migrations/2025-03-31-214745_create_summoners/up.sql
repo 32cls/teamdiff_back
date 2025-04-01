@@ -4,5 +4,5 @@ CREATE TABLE summoners(
     icon INTEGER NOT NULL,
     revision_date TIMESTAMP NOT NULL,
     level INTEGER NOT NULL,
-    puuid VARCHAR NOT NULL REFERENCES accounts(puuid)
+    account_puuid VARCHAR UNIQUE NOT NULL REFERENCES accounts(puuid)
 )
