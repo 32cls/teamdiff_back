@@ -7,15 +7,15 @@ use std::env;
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, rt::{task, Runtime}, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
-use dto::AccountDto;
+use dto::{AccountDto, SummonerDto};
 use graphql::GqlAccount;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
-use models::Account;
+use models::{Account, Summoner};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use reqwest::ClientBuilder;
+use reqwest::{Client, ClientBuilder};
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
@@ -35,11 +35,15 @@ fn initialize_db_pool() -> DbPool {
         .expect("Error connecting to the database")
 }
 
-async fn get_account_from_api(region: String, name: String, tag: String) -> Result<Account, Error> {
+fn client() -> Client {
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert("X-Riot-Token", std::env::var("RIOT_API_KEY").expect("RIOT_API_KEY should be set").parse().unwrap());
-    let client = ClientBuilder::new().default_headers(headers).build().unwrap();
-    let account_dto = client
+    ClientBuilder::new().default_headers(headers).build().unwrap()
+}
+
+async fn get_account_data(region: String, name: String, tag: String) -> Result<Account, Error> {
+    
+    let account_dto = client()
         .get(format!("https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}"))
         .send()
         .await
@@ -48,6 +52,20 @@ async fn get_account_from_api(region: String, name: String, tag: String) -> Resu
         .await
         .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;   
     Ok(Account { puuid: account_dto.puuid, name: account_dto.gamename, tag: account_dto.tagline })
+}
+
+async fn get_summoner_data(region: String, puuid: String) -> Result<Summoner, Error> {
+    let summoner_dto = client()
+        .get(format!("https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}"))
+        .send()
+        .await
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
+        .json::<SummonerDto>()
+        .await
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+
+    Ok(Summoner { id: summoner_dto.id, icon: summoner_dto.profile_icon_id, level: summoner_dto.summoner_level, account_puuid: puuid })   
+
 }
 
 struct Query;
@@ -61,6 +79,7 @@ impl Query {
         context: &Context,
     ) -> FieldResult<GqlAccount> {
         use self::schema::accounts::dsl::*;
+        use self::schema::summoners::dsl::*;
         let conn = &mut context.db.get().unwrap();
         let result_acc: Vec<Account> = accounts
             .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
@@ -72,7 +91,7 @@ impl Query {
             let acc = task::spawn_blocking(move || {
                 let resp = Runtime::new()
                     .unwrap()
-                    .block_on(get_account_from_api(String::from("europe"), game_name, game_tag))
+                    .block_on(get_account_data(String::from("europe"), game_name, game_tag))
                     .unwrap();
                 resp
             }).await.unwrap();
@@ -92,6 +111,23 @@ impl Query {
             }
             Ok(GqlAccount::from_db(&acc, conn))
         } else {
+            let found_acc = result_acc.get(0).unwrap().clone();
+            let summoner = summoners
+                .filter(puuid.eq(found_acc.puuid))
+                .select(Summoner::as_select())
+                .load(conn)
+                .expect("Error loading account");
+            let summ: Summoner = task::spawn_blocking(move || {
+                let resp = Runtime::new()
+                    .unwrap()
+                    .block_on(get_summoner_data(String::from("europe"), found_acc.puuid))
+                    .unwrap();
+                resp
+            }).await.unwrap();
+            diesel::insert_into(summoners)
+                    .values(summ.clone())
+                    .execute(conn)
+                    .expect("Error while saving summoner");
             Ok(GqlAccount::from_db(result_acc.get(0).unwrap(),conn))
         }
     }

@@ -4,7 +4,7 @@ use juniper::GraphQLObject;
 
 use crate::models::{Account, Summoner};
 
-#[derive(GraphQLObject)]
+#[derive(GraphQLObject, Debug)]
 #[graphql(description = "A summoner as defined by Riot API")]
 pub struct GqlSummoner {
     #[graphql(desc = "Identifier of the summoner")]
@@ -27,16 +27,17 @@ pub struct GqlAccount {
 }
 
 impl GqlAccount {
-    pub fn from_db(account: &Account, conn: &PgConnection) -> Self {
+    pub fn from_db(account: &Account, conn: &mut PgConnection) -> Self {
         let summoner = Summoner::belonging_to(&account)
-            .first::<Summoner>(&mut conn)
+            .select(Summoner::as_select())
+            .first(conn)
             .ok()
             .map(|s| GqlSummoner {
                 id: s.id,
                 icon: s.icon,
                 level: s.level,
             });
-
+        println!("Summoner: {:?}", summoner);
         GqlAccount {
             name: account.name.clone(),
             tag: account.tag.clone(),

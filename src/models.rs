@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use crate::schema::{accounts, summoners};
 
-#[derive(Queryable, Insertable, Selectable, Clone, Debug)]
+#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug)]
 #[diesel(table_name = accounts)]
 #[diesel(primary_key(puuid))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -11,7 +11,7 @@ pub struct Account {
     pub tag: String
 }
 
-#[derive(Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq)]
+#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq)]
 #[diesel(table_name = summoners)]
 #[diesel(belongs_to(Account, foreign_key = account_puuid))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
