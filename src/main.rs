@@ -6,11 +6,12 @@ pub mod dto;
 use std::env;
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, rt::{task, Runtime}, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
+use chrono::DateTime;
 use dotenvy::dotenv;
 use dto::{AccountDto, SummonerDto};
-use graphql::{GqlAccount, GqlSummoner};
+use graphql::GqlAccount;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
-use diesel::{r2d2, PgConnection};
+use diesel::{debug_query, r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
 use models::{Account, Summoner};
 use diesel::prelude::*;
@@ -64,7 +65,13 @@ async fn get_summoner_data(region: String, puuid: String) -> Result<Summoner, Er
         .await
         .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
 
-    Ok(Summoner { id: summoner_dto.id, icon: summoner_dto.profile_icon_id, level: summoner_dto.summoner_level, account_puuid: puuid })   
+    Ok(Summoner { 
+        id: summoner_dto.id, 
+        icon: summoner_dto.profile_icon_id, 
+        level: summoner_dto.summoner_level, 
+        revision_date: DateTime::from_timestamp_millis(summoner_dto.revision_date).expect("Invalid timestamp supplied").naive_utc(),
+        account_puuid: puuid 
+    })   
 
 }
 
@@ -81,28 +88,18 @@ impl Query {
         use self::schema::accounts::dsl::*;
         use self::schema::summoners::dsl::*;
         let connection = &mut context.db.get().unwrap();
+        let query = accounts
+            .left_join(summoners)
+            .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
+            .select((Account::as_select(), Option::<Summoner>::as_select()));
+        println!("Debug query: {}", debug_query::<DB, _>(&query));
         let gql_acc: GqlAccount = match accounts
             .left_join(summoners)
             .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
             .select((Account::as_select(), Option::<Summoner>::as_select()))
             .first::<(Account, Option<Summoner>)>(connection) {
                 Ok((acc_res, sum_res)) => {
-                    match sum_res {
-                        Some(summoner_found) => {
-                            GqlAccount { 
-                                name: acc_res.name, 
-                                tag: acc_res.tag, 
-                                summoner: Some(GqlSummoner::from_obj(&summoner_found))
-                            } 
-                        }
-                        None => {
-                            GqlAccount { 
-                                name: acc_res.name, 
-                                tag: acc_res.tag,
-                                summoner: None
-                            }
-                        }
-                    }
+                    GqlAccount::from_obj(&acc_res, sum_res)
                 }
                 Err(_) => {
                     let (account, summoner) = task::spawn_blocking(move || {
@@ -110,22 +107,21 @@ impl Query {
                             .unwrap()
                             .block_on(get_account_data(String::from("europe"), game_name, game_tag))
                             .unwrap();
-                        // TODO: handle case if acc has no associated summoner
                         let sum_resp = Runtime::new()
                             .unwrap()
-                            .block_on(get_summoner_data(String::from("EUW1"), acc_resp.puuid.clone()))
-                            .unwrap();
-                        (acc_resp, sum_resp)
+                            .block_on(get_summoner_data(String::from("EUW1"), acc_resp.puuid.clone()));
+
+                        (acc_resp, sum_resp.ok()) 
                     }).await.unwrap();
-                    // TODO: handle error during inserts
-                    let _ = diesel::insert_into(summoners).values(&summoner).execute(connection);
-                    let _ = diesel::insert_into(accounts).values(&account).on_conflict(puuid).do_update().set(&account).execute(connection);
-                    GqlAccount {
-                        name: account.name,
-                        tag: account.tag,
-                        summoner: Some({
-                            GqlSummoner::from_obj(&summoner)
-                        })
+                    diesel::insert_into(accounts).values(&account).on_conflict(puuid).do_update().set(&account).execute(connection)?;
+                    match summoner {
+                        Some(summ) => {
+                            diesel::insert_into(summoners).values(&summ).execute(connection)?;
+                            GqlAccount::from_obj(&account, Some(summ))
+                        }
+                        None => {
+                            GqlAccount::from_obj(&account, None)
+                        }
                     }
                 }
             };

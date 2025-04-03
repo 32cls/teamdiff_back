@@ -15,5 +15,7 @@ pub struct SummonerDto {
     pub profile_icon_id: i32,
     pub id: String,
     #[serde(rename = "summonerLevel")]
-    pub summoner_level: i32
+    pub summoner_level: i32,
+    #[serde(rename = "revisionDate")]
+    pub revision_date: i64
 }

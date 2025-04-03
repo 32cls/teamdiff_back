@@ -1,8 +1,8 @@
 
+use chrono::Utc;
 use diesel::prelude::*;
-use juniper::GraphQLObject;
+use juniper::{integrations::chrono::DateTime, GraphQLObject};
 use url::Url;
-
 use crate::models::{Account, Summoner};
 
 #[derive(GraphQLObject, Debug)]
@@ -13,7 +13,9 @@ pub struct GqlSummoner {
     #[graphql(desc = "Icon URL of the summoner")]
     pub icon: Url,
     #[graphql(desc = "Experience level of the summoner")]
-    pub level: i32
+    pub level: i32,
+    #[graphql(desc = "Datetime (UTC) at which the summoner was last updated on Riot API")]
+    pub revision: DateTime<Utc>
 }
 
 impl GqlSummoner {
@@ -21,7 +23,8 @@ impl GqlSummoner {
         GqlSummoner { 
             id: summoner.id.clone(), 
             icon: Url::parse(&format!("https://ddragon.leagueoflegends.com/cdn/15.7.1/img/profileicon/{}.png",summoner.icon)).unwrap(),
-            level: summoner.level
+            level: summoner.level,
+            revision: summoner.revision_date.and_utc()
         }
     }
 }
@@ -49,6 +52,14 @@ impl GqlAccount {
             name: account.name.clone(),
             tag: account.tag.clone(),
             summoner,
+        }
+    }
+
+    pub fn from_obj(account: &Account, summoner: Option<Summoner>) -> Self {
+        GqlAccount { 
+            name: account.name.clone(), 
+            tag: account.tag.clone(), 
+            summoner: summoner.map(|s| GqlSummoner::from_obj(&s))
         }
     }
 }
