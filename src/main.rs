@@ -8,7 +8,7 @@ use actix_cors::Cors;
 use actix_web::{http::header, middleware, rt::{task, Runtime}, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
 use dto::{AccountDto, SummonerDto};
-use graphql::GqlAccount;
+use graphql::{GqlAccount, GqlSummoner};
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
@@ -80,57 +80,57 @@ impl Query {
     ) -> FieldResult<GqlAccount> {
         use self::schema::accounts::dsl::*;
         use self::schema::summoners::dsl::*;
-        let conn = &mut context.db.get().unwrap();
-        let result_acc: Vec<Account> = accounts
+        let connection = &mut context.db.get().unwrap();
+        let gql_acc: GqlAccount = match accounts
+            .left_join(summoners)
             .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
-            .select(Account::as_select())
-            .load(conn)
-            .expect("Error loading account");
-
-        if result_acc.is_empty() {
-            let acc = task::spawn_blocking(move || {
-                let resp = Runtime::new()
-                    .unwrap()
-                    .block_on(get_account_data(String::from("europe"), game_name, game_tag))
-                    .unwrap();
-                resp
-            }).await.unwrap();
-            println!("{:?}",acc);
-            let exist_account = accounts.find(&acc.puuid).first::<Account>(conn);
-            if exist_account.is_ok(){
-                diesel::update(accounts)
-                    .set((name.eq(&acc.name),tag.eq(&acc.tag)))
-                    .filter(puuid.eq(&acc.puuid))
-                    .execute(conn)
-                    .expect("Error while saving account");
-            } else {
-                diesel::insert_into(accounts)
-                    .values(acc.clone())
-                    .execute(conn)
-                    .expect("Error while saving account");
-            }
-            Ok(GqlAccount::from_db(&acc, conn))
-        } else {
-            let found_acc = result_acc.get(0).unwrap().clone();
-            let summoner = summoners
-                .filter(puuid.eq(found_acc.puuid))
-                .select(Summoner::as_select())
-                .load(conn)
-                .expect("Error loading account");
-            let summ: Summoner = task::spawn_blocking(move || {
-                let resp = Runtime::new()
-                    .unwrap()
-                    .block_on(get_summoner_data(String::from("europe"), found_acc.puuid))
-                    .unwrap();
-                resp
-            }).await.unwrap();
-            diesel::insert_into(summoners)
-                    .values(summ.clone())
-                    .execute(conn)
-                    .expect("Error while saving summoner");
-            Ok(GqlAccount::from_db(result_acc.get(0).unwrap(),conn))
-        }
-    }
+            .select((Account::as_select(), Option::<Summoner>::as_select()))
+            .first::<(Account, Option<Summoner>)>(connection) {
+                Ok((acc_res, sum_res)) => {
+                    match sum_res {
+                        Some(summoner_found) => {
+                            GqlAccount { 
+                                name: acc_res.name, 
+                                tag: acc_res.tag, 
+                                summoner: Some(GqlSummoner::from_obj(&summoner_found))
+                            } 
+                        }
+                        None => {
+                            GqlAccount { 
+                                name: acc_res.name, 
+                                tag: acc_res.tag,
+                                summoner: None
+                            }
+                        }
+                    }
+                }
+                Err(_) => {
+                    let (account, summoner) = task::spawn_blocking(move || {
+                        let acc_resp = Runtime::new()
+                            .unwrap()
+                            .block_on(get_account_data(String::from("europe"), game_name, game_tag))
+                            .unwrap();
+                        // TODO: handle case if acc has no associated summoner
+                        let sum_resp = Runtime::new()
+                            .unwrap()
+                            .block_on(get_summoner_data(String::from("EUW1"), acc_resp.puuid.clone()))
+                            .unwrap();
+                        (acc_resp, sum_resp)
+                    }).await.unwrap();
+                    // TODO: handle error during inserts
+                    let _ = diesel::insert_into(summoners).values(&summoner).execute(connection);
+                    let _ = diesel::insert_into(accounts).values(&account).on_conflict(puuid).do_update().set(&account).execute(connection);
+                    GqlAccount {
+                        name: account.name,
+                        tag: account.tag,
+                        summoner: Some({
+                            GqlSummoner::from_obj(&summoner)
+                        })
+                    }
+                }
+            };
+            Ok(gql_acc)
+        }        
 }
 
 type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;

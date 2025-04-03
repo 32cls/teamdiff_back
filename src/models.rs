@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use crate::schema::{accounts, summoners};
 
-#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug)]
+#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, AsChangeset)]
 #[diesel(table_name = accounts)]
 #[diesel(primary_key(puuid))]
 #[diesel(check_for_backend(diesel::pg::Pg))]

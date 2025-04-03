@@ -1,6 +1,7 @@
 
 use diesel::prelude::*;
 use juniper::GraphQLObject;
+use url::Url;
 
 use crate::models::{Account, Summoner};
 
@@ -9,10 +10,20 @@ use crate::models::{Account, Summoner};
 pub struct GqlSummoner {
     #[graphql(desc = "Identifier of the summoner")]
     pub id: String,
-    #[graphql(desc = "Icon of the summoner")]
-    pub icon: i32,
+    #[graphql(desc = "Icon URL of the summoner")]
+    pub icon: Url,
     #[graphql(desc = "Experience level of the summoner")]
     pub level: i32
+}
+
+impl GqlSummoner {
+    pub fn from_obj(summoner: &Summoner) -> Self {
+        GqlSummoner { 
+            id: summoner.id.clone(), 
+            icon: Url::parse(&format!("https://ddragon.leagueoflegends.com/cdn/15.7.1/img/profileicon/{}.png",summoner.icon)).unwrap(),
+            level: summoner.level
+        }
+    }
 }
 
 #[derive(GraphQLObject)]
@@ -32,11 +43,7 @@ impl GqlAccount {
             .select(Summoner::as_select())
             .first(conn)
             .ok()
-            .map(|s| GqlSummoner {
-                id: s.id,
-                icon: s.icon,
-                level: s.level,
-            });
+            .map(|s| GqlSummoner::from_obj(&s));
         println!("Summoner: {:?}", summoner);
         GqlAccount {
             name: account.name.clone(),

@@ -1309,6 +1309,7 @@ dependencies = [
  "serde",
  "smartstring",
  "static_assertions",
+ "url",
 ]
 
 [[package]]
@@ -2107,6 +2108,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "url",
 ]
 
 [[package]]
