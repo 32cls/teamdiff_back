@@ -23,3 +23,21 @@ pub struct Summoner {
     pub revision_date: NaiveDateTime,
     pub account_puuid: String
 }
+
+#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq, AsChangeset)]
+#[diesel(table_name = matches)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Match {
+    pub id: i32,
+    pub name: String,
+}
+
+#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq, AsChangeset)]
+#[diesel(belongs_to(Match))]
+#[diesel(belongs_to(Summoner))]
+#[diesel(table_name = matches_summoners)]
+#[diesel(primary_key(book_id, author_id))]
+pub struct MatchSummoner {
+    pub match_id: String,
+    pub summoner_id: String,
+}

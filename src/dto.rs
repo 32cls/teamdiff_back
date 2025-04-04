@@ -19,3 +19,37 @@ pub struct SummonerDto {
     #[serde(rename = "revisionDate")]
     pub revision_date: i64
 }
+
+#[derive(Deserialize, Debug)]
+pub struct MatchDto {
+    pub metadata: MetadataDto,
+    pub info: InfoDto
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MetadataDto {
+    #[serde(rename = "matchId")]
+    pub match_id: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct InfoDto {
+    pub game_duration: i64,
+    pub participants: Vec<ParticipantDto>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ParticipantDto {
+    pub puuid: String,
+    pub champion_id: i32,
+    pub team_id: i32,
+    pub win: bool,
+    pub kills: i32,
+    pub deaths: i32,
+    pub assists: i32,
+    #[serde(rename = "champLevel")]
+    pub champ_level: i32,
+    #[serde(rename = "teamPosition")]
+    pub team_position: String,
+}
+

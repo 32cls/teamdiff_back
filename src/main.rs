@@ -11,7 +11,7 @@ use dotenvy::dotenv;
 use dto::{AccountDto, SummonerDto};
 use graphql::GqlAccount;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
-use diesel::{debug_query, r2d2, PgConnection};
+use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
 use models::{Account, Summoner};
 use diesel::prelude::*;
@@ -75,6 +75,29 @@ async fn get_summoner_data(region: String, puuid: String) -> Result<Summoner, Er
 
 }
 
+async fn get_matches_data(region: String, puuid: String) -> Result<Vec<Match>, Error> {
+    let matches_id = client()
+        .get(format!("https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"))
+        .send()
+        .await
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
+        .json::<Vec<String>>()
+        .await
+        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+    
+    matches.into_iter().map(async |match_id| {
+        client()
+            .get(format!("https://{region}.api.riotgames.com/lol/match/v5/matches/{match_id}"))
+            .send()
+            .await
+            .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
+            .json::<MatchDto>()
+            .await
+            .map_err(|e| actix_web::error::ErrorInternalServerError(e))
+    }).collect::<Result<Vec<Match>, _>>();
+    
+    Ok(matches)   
+}
 struct Query;
 
 #[graphql_object]
@@ -88,11 +111,6 @@ impl Query {
         use self::schema::accounts::dsl::*;
         use self::schema::summoners::dsl::*;
         let connection = &mut context.db.get().unwrap();
-        let query = accounts
-            .left_join(summoners)
-            .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
-            .select((Account::as_select(), Option::<Summoner>::as_select()));
-        println!("Debug query: {}", debug_query::<DB, _>(&query));
         let gql_acc: GqlAccount = match accounts
             .left_join(summoners)
             .filter(name.eq(game_name.clone()).and(tag.eq(game_tag.clone())))
