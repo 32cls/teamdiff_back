@@ -34,6 +34,7 @@ pub struct MetadataDto {
 
 #[derive(Deserialize, Debug)]
 pub struct InfoDto {
+    #[serde(rename = "gameDuration")]
     pub game_duration: i64,
     pub participants: Vec<ParticipantDto>
 }
@@ -41,7 +42,9 @@ pub struct InfoDto {
 #[derive(Deserialize, Debug)]
 pub struct ParticipantDto {
     pub puuid: String,
+    #[serde(rename = "championId")]
     pub champion_id: i32,
+    #[serde(rename = "teamId")]
     pub team_id: i32,
     pub win: bool,
     pub kills: i32,

@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
-use crate::{dto::MatchDto, schema::{accounts, matches, participants, summoners}};
+use crate::{dto::{MatchDto, ParticipantDto}, schema::{accounts, champions, matches, participants, summoners}};
 
 #[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, AsChangeset)]
 #[diesel(table_name = accounts)]
@@ -44,9 +44,44 @@ impl Match {
 #[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq)]
 #[diesel(belongs_to(Match))]
 #[diesel(belongs_to(Summoner))]
+#[diesel(belongs_to(Champion))]
 #[diesel(table_name = participants)]
 #[diesel(primary_key(match_id, summoner_id))]
 pub struct Participant {
     pub match_id: String,
     pub summoner_id: String,
+    pub champion_id: i32,
+    pub team_id: i32,
+    pub win: bool,
+    pub kills: i32,
+    pub deaths: i32,
+    pub assists: i32,
+    pub level: i32,
+    pub team_position: String,
+}
+
+impl Participant {
+    pub fn from_dto(match_id: String, summoner_id: String, participant_dto: &ParticipantDto) -> Self {
+        Participant {
+            match_id: match_id,
+            summoner_id: summoner_id,
+            assists: participant_dto.assists,
+            champion_id: participant_dto.champion_id,
+            deaths: participant_dto.deaths,
+            kills: participant_dto.kills,
+            level: participant_dto.champ_level,
+            team_id: participant_dto.team_id,
+            team_position: participant_dto.team_position.clone(),
+            win: participant_dto.win,
+        }
+    }
+}
+
+#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, PartialEq)]
+#[diesel(table_name = champions)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Champion {
+    pub id: i32,
+    pub name: String,
+    pub icon: String,
 }

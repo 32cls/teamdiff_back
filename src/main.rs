@@ -18,6 +18,7 @@ use models::{Account, Match, Participant, Summoner};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use reqwest::{Client, ClientBuilder};
+use schema::participants;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
@@ -76,33 +77,57 @@ async fn get_summoner_data(region: String, puuid: String) -> Result<Summoner, Er
 
 }
 
-async fn get_matches_data(region: String, puuid: String) -> Result<Vec<Match>, Error> {
+async fn get_matches_data(region: String, puuid: String) -> Result<(Vec<Match>,Vec<Participant>), Error> {
+    println!("Miaou");
     let matches_id = client()
-        .get(format!("https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"))
+        .get(format!("https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?queue=420&count=10"))
         .send()
         .await
         .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
         .json::<Vec<String>>()
         .await
         .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+
+    println!("Matches ID: {:?}", matches_id);
     
     let matches_futures = matches_id.into_iter().map(|match_id| {
-    let value = region.clone();
-    async move {
-        client()
-            .get(format!("https://{value}.api.riotgames.com/lol/match/v5/matches/{match_id}"))
+        let cloned_region = region.clone();
+        async move {
+            let resp = client()
+            .get(format!("https://{cloned_region}.api.riotgames.com/lol/match/v5/matches/{match_id}"))
             .send()
             .await
-            .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
-            .json::<MatchDto>()
-            .await
-            .map_err(|e| actix_web::error::ErrorInternalServerError(e))
-    }
+            .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+
+            let status = resp.status();
+            let text = resp.text().await.map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
+
+            println!("🔍 Match {match_id} response (status {status}):\n{text}");
+
+            if !status.is_success() {
+                return Err(actix_web::error::ErrorInternalServerError(format!("API error: {}", text)));
+            }
+
+            // maintenant tu peux parser après le log
+            let parsed = serde_json::from_str::<MatchDto>(&text)
+                .map_err(|e| {
+                    eprintln!("❌ Failed to parse MatchDto: {e}\nText: {text}");
+                    actix_web::error::ErrorInternalServerError(e)
+                })?;
+            
+            Ok(parsed)
+        }
     });
 
     let matches_data: Vec<MatchDto> = try_join_all(matches_futures).await?;
+    println!("Matches Data: {:?}", matches_data);
     let mapped_matchs = matches_data.into_iter().map(Match::from_dto).collect::<Vec<Match>>();
-    Ok(mapped_matchs)   
+    let mapped_participants = matches_data.iter().map(|m| {
+        m.info.participants.iter().map(|participant| {
+            Participant::from_dto(m.metadata.match_id.clone(), participant.puuid.clone(), participant)
+        }).collect::<Vec<Participant>>()
+    }).flatten().collect::<Vec<Participant>>();
+    Ok((mapped_matchs, mapped_participants))   
 }
 struct Query;
 
@@ -123,7 +148,16 @@ impl Query {
             .select((Account::as_select(), Option::<Summoner>::as_select()))
             .first::<(Account, Option<Summoner>)>(connection) {
                 Ok((acc_res, sum_res)) => {
-                    GqlAccount::from_obj(&acc_res, sum_res.as_ref().map(GqlSummoner::from_obj))
+                    match sum_res {
+                        Some(summ) => {
+                            let history = Participant::belonging_to(&summ).inner_join(schema::matches::table).select(Match::as_select()).load(connection)?;
+                            let summoner_with_history = GqlSummoner::from_obj(&summ, Some(history), );
+                            GqlAccount::from_obj(&acc_res, Some(summoner_with_history))
+                        }
+                        None => {
+                            GqlAccount::from_obj(&acc_res, None)
+                        }
+                    }
                 }
                 Err(_) => {
                     let (account, summoner) = task::spawn_blocking(move || {
@@ -145,13 +179,17 @@ impl Query {
                             let summoner_matches = task::spawn_blocking(move || {
                                 let sum_mat = Runtime::new()
                                     .unwrap()
-                                    .block_on(get_matches_data(String::from("EUW1"), puuid_str))
+                                    .block_on(get_matches_data(String::from("europe"), puuid_str))
                                     .unwrap();
                                 sum_mat
                             }).await.unwrap();
+                            println!("Matches: {:?}", summoner_matches);
                             diesel::insert_into(schema::matches::table).values(&summoner_matches).execute(connection)?;
-                            diesel::insert_into(schema::participants::table).values(&summoner_matches.iter().map(|m| Participant { match_id: m.id.clone(), summoner_id: summ.id.clone() }).collect::<Vec<Participant>>()).execute(connection)?;
-                            GqlAccount::from_obj(&account, Some(GqlSummoner::from_obj(&summ)))
+                            let participants = summoner_matches.iter().map(|m| 
+                                Participant::from_dto(match_id, summoner_id, m.) 
+                            ).collect::<Vec<Participant>>();
+                            diesel::insert_into(schema::participants::table).values(&participants).collect::<Vec<Participant>>().execute(connection)?;
+                            GqlAccount::from_obj(&account, Some(GqlSummoner::from_obj(&summ, Some(summoner_matches))))
                         }
                         None => {
                             GqlAccount::from_obj(&account, None)

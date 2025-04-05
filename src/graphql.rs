@@ -1,9 +1,8 @@
 
 use chrono::Utc;
-use diesel::prelude::*;
 use juniper::{integrations::chrono::DateTime, GraphQLObject};
 use url::Url;
-use crate::models::{Account, Match, Summoner};
+use crate::models::{Account, Match, Participant, Summoner};
 
 #[derive(GraphQLObject, Debug)]
 #[graphql(description = "A match played by the summoner")]
@@ -12,14 +11,55 @@ pub struct GqlMatch {
     pub id: String,
     #[graphql(desc = "Duration of the match")]
     pub duration: i32,
+    #[graphql(desc = "List of participants in the match")]
+    pub participants: Vec<GqlParticipant>,
 }
 
 impl GqlMatch {
-    pub fn from_obj(match_obj: &Match) -> Self {
+    pub fn from_obj(match_obj: &Match, participants: &Vec<Participant>) -> Self {
         GqlMatch { 
             id: match_obj.id.clone(), 
-            duration: match_obj.duration, 
+            duration: match_obj.duration,
+            participants: GqlParticipant::from_batch(participants),
         }
+    }
+}
+
+#[derive(GraphQLObject, Debug)]
+#[graphql(description = "The summoner that played in the match")]
+pub struct GqlParticipant {
+    #[graphql(desc = "Identifier of the summoner")]
+    pub id: String,
+    #[graphql(desc = "Identifier of the champion played by the summoner")]
+    pub champion_id: i32,
+    #[graphql(desc = "Team ID of the summoner")]
+    pub team_id: i32,
+    #[graphql(desc = "Whether the summoner won the match")]
+    pub win: bool,
+    #[graphql(desc = "Number of kills made by the summoner")]
+    pub kills: i32,
+    #[graphql(desc = "Number of deaths made by the summoner")]
+    pub deaths: i32,
+    #[graphql(desc = "Number of assists made by the summoner")]
+    pub assists: i32,
+    #[graphql(desc = "Level of the champion played by the summoner")]
+    pub level: i32,
+}
+
+impl GqlParticipant {
+    pub fn from_batch(participants: &Vec<Participant>) -> Vec<GqlParticipant> {
+        participants.into_iter().map(|participant| {
+            GqlParticipant { 
+                id: participant.summoner_id.clone(), 
+                champion_id: participant.champion_id, 
+                team_id: participant.team_id, 
+                win: participant.win, 
+                kills: participant.kills, 
+                deaths: participant.deaths, 
+                assists: participant.assists, 
+                level: participant.level,
+            }
+        }).collect()        
     }
 }
 
@@ -39,13 +79,13 @@ pub struct GqlSummoner {
 }
 
 impl GqlSummoner {
-    pub fn from_obj(summoner: &Summoner) -> Self {
+    pub fn from_obj(summoner: &Summoner, history_opt: Option<Vec<Match>>, participants: &Vec<Participant>) -> Self {
         GqlSummoner { 
             id: summoner.id.clone(), 
             icon: Url::parse(&format!("https://ddragon.leagueoflegends.com/cdn/15.7.1/img/profileicon/{}.png",summoner.icon)).unwrap(),
             level: summoner.level,
             revision: summoner.revision_date.and_utc(),
-            matches: Vec::new(),
+            matches: history_opt.unwrap_or(Vec::new()).into_iter().map(|m| GqlMatch::from_obj(&m, participants)).collect(),
         }
     }
 }
@@ -62,20 +102,6 @@ pub struct GqlAccount {
 }
 
 impl GqlAccount {
-    pub fn from_db(account: &Account, conn: &mut PgConnection) -> Self {
-        let summoner = Summoner::belonging_to(&account)
-            .select(Summoner::as_select())
-            .first(conn)
-            .ok()
-            .map(|s| GqlSummoner::from_obj(&s));
-        println!("Summoner: {:?}", summoner);
-        GqlAccount {
-            name: account.name.clone(),
-            tag: account.tag.clone(),
-            summoner,
-        }
-    }
-
     pub fn from_obj(account: &Account, summoner: Option<GqlSummoner>) -> Self {
         GqlAccount { 
             name: account.name.clone(), 
