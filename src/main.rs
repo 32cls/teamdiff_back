@@ -8,12 +8,13 @@ use actix_cors::Cors;
 use actix_web::{http::header, middleware, rt::{task, Runtime}, web::{self, Data}, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use chrono::DateTime;
 use dotenvy::dotenv;
-use dto::{AccountDto, SummonerDto};
-use graphql::GqlAccount;
+use dto::{AccountDto, MatchDto, SummonerDto};
+use futures::future::try_join_all;
+use graphql::{GqlAccount, GqlSummoner};
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use diesel::{r2d2, PgConnection};
 use juniper_actix::{graphiql_handler, graphql_handler};
-use models::{Account, Summoner};
+use models::{Account, Match, Participant, Summoner};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use reqwest::{Client, ClientBuilder};
@@ -85,18 +86,23 @@ async fn get_matches_data(region: String, puuid: String) -> Result<Vec<Match>, E
         .await
         .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
     
-    matches.into_iter().map(async |match_id| {
+    let matches_futures = matches_id.into_iter().map(|match_id| {
+    let value = region.clone();
+    async move {
         client()
-            .get(format!("https://{region}.api.riotgames.com/lol/match/v5/matches/{match_id}"))
+            .get(format!("https://{value}.api.riotgames.com/lol/match/v5/matches/{match_id}"))
             .send()
             .await
             .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
             .json::<MatchDto>()
             .await
             .map_err(|e| actix_web::error::ErrorInternalServerError(e))
-    }).collect::<Result<Vec<Match>, _>>();
-    
-    Ok(matches)   
+    }
+    });
+
+    let matches_data: Vec<MatchDto> = try_join_all(matches_futures).await?;
+    let mapped_matchs = matches_data.into_iter().map(Match::from_dto).collect::<Vec<Match>>();
+    Ok(mapped_matchs)   
 }
 struct Query;
 
@@ -117,7 +123,7 @@ impl Query {
             .select((Account::as_select(), Option::<Summoner>::as_select()))
             .first::<(Account, Option<Summoner>)>(connection) {
                 Ok((acc_res, sum_res)) => {
-                    GqlAccount::from_obj(&acc_res, sum_res)
+                    GqlAccount::from_obj(&acc_res, sum_res.as_ref().map(GqlSummoner::from_obj))
                 }
                 Err(_) => {
                     let (account, summoner) = task::spawn_blocking(move || {
@@ -135,7 +141,17 @@ impl Query {
                     match summoner {
                         Some(summ) => {
                             diesel::insert_into(summoners).values(&summ).execute(connection)?;
-                            GqlAccount::from_obj(&account, Some(summ))
+                            let puuid_str = summ.account_puuid.clone();
+                            let summoner_matches = task::spawn_blocking(move || {
+                                let sum_mat = Runtime::new()
+                                    .unwrap()
+                                    .block_on(get_matches_data(String::from("EUW1"), puuid_str))
+                                    .unwrap();
+                                sum_mat
+                            }).await.unwrap();
+                            diesel::insert_into(schema::matches::table).values(&summoner_matches).execute(connection)?;
+                            diesel::insert_into(schema::participants::table).values(&summoner_matches.iter().map(|m| Participant { match_id: m.id.clone(), summoner_id: summ.id.clone() }).collect::<Vec<Participant>>()).execute(connection)?;
+                            GqlAccount::from_obj(&account, Some(GqlSummoner::from_obj(&summ)))
                         }
                         None => {
                             GqlAccount::from_obj(&account, None)

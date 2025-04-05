@@ -1,9 +1,10 @@
 -- Your SQL goes here
 CREATE TABLE matches (
-    id VARCHAR PRIMARY KEY
+    id VARCHAR PRIMARY KEY,
+    duration INTEGER NOT NULL
 );
 
-CREATE TABLE matches_summoners (
+CREATE TABLE participants (
     match_id VARCHAR NOT NULL,
     summoner_id VARCHAR NOT NULL,
     FOREIGN KEY (match_id) REFERENCES matches(id),

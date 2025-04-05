@@ -2166,6 +2166,7 @@ dependencies = [
  "diesel_migrations",
  "dotenvy",
  "env_logger",
+ "futures",
  "juniper",
  "juniper_actix",
  "reqwest",

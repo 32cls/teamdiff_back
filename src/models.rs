@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
-use crate::schema::{accounts, summoners};
+use crate::{dto::MatchDto, schema::{accounts, matches, participants, summoners}};
 
 #[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, AsChangeset)]
 #[diesel(table_name = accounts)]
@@ -24,20 +24,29 @@ pub struct Summoner {
     pub account_puuid: String
 }
 
-#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq, AsChangeset)]
+#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, PartialEq)]
 #[diesel(table_name = matches)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Match {
-    pub id: i32,
-    pub name: String,
+    pub id: String,
+    pub duration: i32,
 }
 
-#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq, AsChangeset)]
+impl Match {
+    pub fn from_dto(match_dto: MatchDto) -> Self {
+        Match { 
+            id: match_dto.metadata.match_id,
+            duration: match_dto.info.game_duration as i32, 
+        }
+    }
+}
+
+#[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq)]
 #[diesel(belongs_to(Match))]
 #[diesel(belongs_to(Summoner))]
-#[diesel(table_name = matches_summoners)]
-#[diesel(primary_key(book_id, author_id))]
-pub struct MatchSummoner {
+#[diesel(table_name = participants)]
+#[diesel(primary_key(match_id, summoner_id))]
+pub struct Participant {
     pub match_id: String,
     pub summoner_id: String,
 }
