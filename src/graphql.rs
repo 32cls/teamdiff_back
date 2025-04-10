@@ -1,7 +1,6 @@
 
 use chrono::Utc;
 use juniper::{integrations::chrono::DateTime, GraphQLObject};
-use url::Url;
 use crate::models::{Account, Match, Participant, Summoner};
 
 #[derive(GraphQLObject, Debug)]
@@ -11,16 +10,30 @@ pub struct GqlMatch {
     pub id: String,
     #[graphql(desc = "Duration of the match")]
     pub duration: i32,
+    #[graphql(desc = "Datetime (UTC) at which the match was created")]
+    pub game_creation: DateTime<Utc>,
     #[graphql(desc = "List of participants in the match")]
     pub participants: Vec<GqlParticipant>,
 }
 
 impl GqlMatch {
-    pub fn from_obj(match_obj: &Match, participants: &Vec<Participant>) -> Self {
+    pub fn from_obj(match_obj: Match, participants_obj: Vec<Participant>) -> Self {
         GqlMatch { 
-            id: match_obj.id.clone(), 
+            id: match_obj.id, 
             duration: match_obj.duration,
-            participants: GqlParticipant::from_batch(participants),
+            game_creation: match_obj.game_creation.and_utc(),
+            participants: participants_obj.into_iter().map(|participant| {
+                GqlParticipant { 
+                    id: participant.summoner_id.clone(), 
+                    champion_id: participant.champion_id, 
+                    team_id: participant.team_id, 
+                    win: participant.win, 
+                    kills: participant.kills, 
+                    deaths: participant.deaths, 
+                    assists: participant.assists, 
+                    level: participant.level,
+                }
+            }).collect()
         }
     }
 }
@@ -68,8 +81,8 @@ impl GqlParticipant {
 pub struct GqlSummoner {
     #[graphql(desc = "Identifier of the summoner")]
     pub id: String,
-    #[graphql(desc = "Icon URL of the summoner")]
-    pub icon: Url,
+    #[graphql(desc = "Icon id of the summoner")]
+    pub icon: i32,
     #[graphql(desc = "Experience level of the summoner")]
     pub level: i32,
     #[graphql(desc = "Datetime (UTC) at which the summoner was last updated on Riot API")]
@@ -79,13 +92,13 @@ pub struct GqlSummoner {
 }
 
 impl GqlSummoner {
-    pub fn from_obj(summoner: &Summoner, history_opt: Option<Vec<Match>>, participants: &Vec<Participant>) -> Self {
+    pub fn from_obj(summoner: &Summoner, history_opt: Option<Vec<Match>>, participants_opt: Option<Vec<Participant>>) -> Self {
         GqlSummoner { 
             id: summoner.id.clone(), 
-            icon: Url::parse(&format!("https://ddragon.leagueoflegends.com/cdn/15.7.1/img/profileicon/{}.png",summoner.icon)).unwrap(),
+            icon: summoner.icon,
             level: summoner.level,
             revision: summoner.revision_date.and_utc(),
-            matches: history_opt.unwrap_or(Vec::new()).into_iter().map(|m| GqlMatch::from_obj(&m, participants)).collect(),
+            matches: history_opt.unwrap_or(Vec::new()).into_iter().map(|m| GqlMatch::from_obj(m, participants_opt.clone().unwrap_or(Vec::new()))).collect(),
         }
     }
 }

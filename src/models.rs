@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
-use crate::{dto::{MatchDto, ParticipantDto}, schema::{accounts, champions, matches, participants, summoners}};
+use crate::{dto::{MatchDto, ParticipantDto}, schema::{accounts, matches, participants, summoners}};
 
 #[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, AsChangeset)]
 #[diesel(table_name = accounts)]
@@ -30,13 +30,15 @@ pub struct Summoner {
 pub struct Match {
     pub id: String,
     pub duration: i32,
+    pub game_creation: NaiveDateTime,
 }
 
 impl Match {
-    pub fn from_dto(match_dto: MatchDto) -> Self {
+    pub fn from_dto(match_dto: &MatchDto) -> Self {
         Match { 
-            id: match_dto.metadata.match_id,
-            duration: match_dto.info.game_duration as i32, 
+            id: match_dto.metadata.match_id.clone(),
+            duration: match_dto.info.game_duration as i32,
+            game_creation: NaiveDateTime::from_timestamp_millis(match_dto.info.game_creation).unwrap(), 
         }
     }
 }
@@ -44,7 +46,6 @@ impl Match {
 #[derive(Identifiable, Queryable, Insertable, Selectable, Associations, Clone, Debug, PartialEq)]
 #[diesel(belongs_to(Match))]
 #[diesel(belongs_to(Summoner))]
-#[diesel(belongs_to(Champion))]
 #[diesel(table_name = participants)]
 #[diesel(primary_key(match_id, summoner_id))]
 pub struct Participant {
@@ -75,13 +76,4 @@ impl Participant {
             win: participant_dto.win,
         }
     }
-}
-
-#[derive(Identifiable, Queryable, Insertable, Selectable, Clone, Debug, PartialEq)]
-#[diesel(table_name = champions)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Champion {
-    pub id: i32,
-    pub name: String,
-    pub icon: String,
 }

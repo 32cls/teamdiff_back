@@ -36,6 +36,8 @@ pub struct MetadataDto {
 pub struct InfoDto {
     #[serde(rename = "gameDuration")]
     pub game_duration: i64,
+    #[serde(rename = "gameCreation")]
+    pub game_creation: i64,
     pub participants: Vec<ParticipantDto>
 }
 

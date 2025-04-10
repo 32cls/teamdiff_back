@@ -1,13 +1,8 @@
 -- Your SQL goes here
 CREATE TABLE matches (
     id VARCHAR PRIMARY KEY,
-    duration INTEGER NOT NULL
-);
-
-CREATE TABLE champions (
-    id INTEGER PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    icon VARCHAR NOT NULL
+    duration INTEGER NOT NULL,
+    game_creation TIMESTAMP NOT NULL
 );
 
 CREATE TABLE participants (
@@ -23,6 +18,5 @@ CREATE TABLE participants (
     level INTEGER NOT NULL,
     FOREIGN KEY (match_id) REFERENCES matches(id),
     FOREIGN KEY (summoner_id) REFERENCES summoners(id),
-    FOREIGN KEY (champion_id) REFERENCES champions(id),
     PRIMARY KEY (match_id, summoner_id)
 );

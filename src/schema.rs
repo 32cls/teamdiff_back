@@ -20,6 +20,7 @@ diesel::table! {
     matches (id) {
         id -> Varchar,
         duration -> Int4,
+        game_creation -> Timestamp,
     }
 }
 
@@ -48,7 +49,6 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(participants -> champions (champion_id));
 diesel::joinable!(participants -> matches (match_id));
 diesel::joinable!(participants -> summoners (summoner_id));
 diesel::joinable!(summoners -> accounts (account_puuid));
