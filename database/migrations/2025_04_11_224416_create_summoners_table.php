@@ -16,7 +16,8 @@ return new class extends Migration
             $table->integer("icon")->nullable(false);
             $table->timestamp("revision_date")->nullable(false);
             $table->integer("level")->nullable(false);
-            $table->foreign("account_id")->references("puuid")->on("accounts");
+            $table->string("account_id");
+            $table->foreign("account_id")->references('puuid')->on('accounts')->onDelete('cascade');
         });
     }
 
