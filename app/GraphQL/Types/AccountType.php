@@ -16,6 +16,10 @@ class AccountType extends GraphQLType
     public function fields(): array
     {
         return [
+            'puuid' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'The PUUID of the account',
+            ],
             'name' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Name of the account of the player',
@@ -23,6 +27,10 @@ class AccountType extends GraphQLType
             'tag' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Tag (usually preceded by \'#\') of the account of the player',
+            ],
+            'refreshed_at' => [
+                'type' => Type::string(),
+                'description' => 'Last time at which the account was refreshed',
             ]
         ];
     }
