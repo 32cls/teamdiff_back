@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * 
+ *
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Participant newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Participant newQuery()
@@ -26,4 +27,8 @@ class Participant extends Pivot
         'assists',
         'level',
     ];
+
+    public function reviews(): HasMany {
+        return $this->hasMany(Review::class);
+    }
 }

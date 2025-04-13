@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('summoners', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
             $table->integer("icon")->nullable(false);
             $table->timestamp("revision_date")->nullable(false);
             $table->integer("level")->nullable(false);

@@ -1,2 +1,4 @@
 <?php
-return [ "api.key" => env("RIOT_API_KEY") ];
+return [
+    "apikey" => env("RIOT_API_KEY")
+];

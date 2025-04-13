@@ -5,6 +5,7 @@ namespace App\GraphQL\Types;
 use App\Models\Participant;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Type as GraphQLType;
+use Rebing\GraphQL\Support\Facades\GraphQL;
 class ParticipantType extends GraphQLType
 {
     protected $attributes = [
@@ -44,7 +45,10 @@ class ParticipantType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Level of the champion played by the summoner',
             ],
-            're'
+            'reviews' => [
+                'type' => Type::listOf(GraphQL::type('Review')),
+                'description' => 'List of reviews of the summoner in the match',
+            ]
         ];
     }
 
