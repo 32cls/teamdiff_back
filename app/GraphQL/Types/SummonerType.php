@@ -33,8 +33,8 @@ class SummonerType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Datetime (UTC) at which the summoner was last updated on Riot API',
             ],
-            'matches' => [
-                'type' => Type::listOf(GraphQL::type('Lolmatch')),
+            'lolmatches' => [
+                'type' => Type::listOf(GraphQL::type('LolMatch')),
                 'description' => 'History of matches played by the summoner',
             ]
         ];

@@ -8,11 +8,16 @@ use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Http;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 
 class AccountQuery extends Query
 {
+    const SOLO_QUEUE = 420;
+    const MATCHES_BATCH = 10;
+    const REFRESH_LIMIT_MINUTES = 10;
+
     protected $attributes = [
         'name' => 'fetch_account',
     ];
@@ -45,11 +50,44 @@ class AccountQuery extends Query
             $account = Account::firstWhere((
                 ['name' => $args['name'], 'tag' => $args['tag']]
             ));
-            if (!$account) {
-                throw new Error('Account not found');
+            if (!$account || now()->diffInMinutes($account->refreshed_at) > self::REFRESH_LIMIT_MINUTES) {
+                $account_response = Http::acceptJson()->withHeaders([
+                    'X-Riot-Token' => env('RIOT_API_KEY')
+                ])->withUrlParameters([
+                    'region' => 'europe',
+                    'name' => $args['name'],
+                    'tag' => $args['tag']
+                ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')->json();
+                $summoner_response = Http::acceptJson()->withHeaders([
+                    'X-Riot-Token' => env('RIOT_API_KEY')
+                ])->withUrlParameters([
+                    'region' => 'euw',
+                    'puuid' => $account_response['puuid'],
+                ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')->json();
+
+                $matchids_response = Http::acceptJson()->withHeaders([
+                    'X-Riot-Token' => env('RIOT_API_KEY')
+                ])->withUrlParameters([
+                    'region' => 'euw',
+                    'puuid' => $account_response['puuid'],
+                ])->withQueryParameters([
+                    'queue' => self::SOLO_QUEUE,
+                    'count' => self::MATCHES_BATCH,
+                ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')->json();
+
+                $matchids_response->
+
+                $account = Account::create([
+                    'puuid' => $account_response['puuid'],
+                    'name' => $args['name'],
+                    'tag' => $args['tag'],
+                    'refreshed_at' => now(),
+                ]);
             }
             return $account;
         }
-        throw new Error('Account not found');
+        else {
+            throw new Error('Account not found');
+        }
     }
 }

@@ -7,10 +7,10 @@ use App\Models\LoLMatch;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Type as GraphQLType;
 
-class LolmatchType extends GraphQLType
+class LolMatchType extends GraphQLType
 {
     protected $attributes = [
-        'name' => 'Lolmatch',
+        'name' => 'LolMatch',
         'description' => 'A match played by the summoner',
         'model' => LoLMatch::class,
     ];
@@ -30,9 +30,14 @@ class LolmatchType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Datetime (UTC) at which the match was created',
             ],
-            'participants' => [
+            'summoners' => [
                 'type' => Type::listOf(GraphQL::type('Participant')),
-                'description' => 'List of participants in the match',
+                'description' => 'List of summoners in the match',
+                'resolve' => function($match) {
+                    return $match->summoners->map(function($summoner) {
+                        return $summoner->pivot;
+                    });
+                }
             ]
         ];
     }

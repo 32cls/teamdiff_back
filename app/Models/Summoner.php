@@ -23,7 +23,18 @@ class Summoner extends Model
 
     public function lolmatches(): BelongsToMany
     {
-        return $this->belongsToMany(LolMatch::class, 'participants', 'summoner_id', 'match_id')->using(Participant::class);
+        return $this->belongsToMany(LolMatch::class, 'participants', 'summoner_id', 'match_id')
+            ->using(Participant::class)
+            ->withPivot([
+                'champion_id',
+                'team_id',
+                'team_position',
+                'win',
+                'kills',
+                'deaths',
+                'assists',
+                'level'
+            ]);
     }
 
 }

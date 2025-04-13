@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
-use App\GraphQL\Types\LolmatchType;
+use App\GraphQL\Types\LolMatchType;
 use App\GraphQL\Types\ParticipantType;
 use App\GraphQL\Types\SummonerType;
 
@@ -90,7 +90,7 @@ return [
             'types' => [
                 AccountType::class,
                 SummonerType::class,
-                LoLmatchType::class,
+                LolMatchType::class,
                 ParticipantType::class
             ],
 

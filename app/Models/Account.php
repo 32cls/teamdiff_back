@@ -37,5 +37,12 @@ class Account extends Model
     public function summoner(): HasOne{
         return $this->hasOne(Summoner::class, 'account_id');
     }
+
+    protected $fillable = [
+        'puuid',
+        'name',
+        'tag',
+        'refreshed_at',
+    ];
 }
 

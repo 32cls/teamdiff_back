@@ -16,10 +16,6 @@ class ParticipantType extends GraphQLType
     public function fields(): array
     {
         return [
-            'id' => [
-                'type' => Type::nonNull(Type::id()),
-                'description' => 'Identifier of the summoner inside the game',
-            ],
             'champion_id' => [
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Identifier of the champion played by the summoner"',
@@ -47,7 +43,8 @@ class ParticipantType extends GraphQLType
             'level' => [
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Level of the champion played by the summoner',
-            ]
+            ],
+            're'
         ];
     }
 
