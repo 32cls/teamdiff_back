@@ -6,6 +6,7 @@ use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
 use App\GraphQL\Types\LolMatchType;
 use App\GraphQL\Types\ParticipantType;
+use App\GraphQL\Types\ReviewType;
 use App\GraphQL\Types\SummonerType;
 
 return [
@@ -91,7 +92,8 @@ return [
                 AccountType::class,
                 SummonerType::class,
                 LolMatchType::class,
-                ParticipantType::class
+                ParticipantType::class,
+                ReviewType::class
             ],
 
             // Laravel HTTP middleware

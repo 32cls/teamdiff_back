@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- *
+ * 
  *
  * @property string $puuid
  * @property string $name
  * @property string $tag
- * @property string $refreshed_at
+ * @property \Illuminate\Support\Carbon $refreshed_at
+ * @property-read \App\Models\Summoner|null $summoner
  * @method static \Database\Factories\AccountFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Account newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Account newQuery()
@@ -44,5 +45,12 @@ class Account extends Model
         'tag',
         'refreshed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'refreshed_at' => 'datetime:Y-m-d',
+        ];
+    }
 }
 

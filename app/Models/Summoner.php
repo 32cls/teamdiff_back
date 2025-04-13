@@ -9,6 +9,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property int $icon
+ * @property \Illuminate\Support\Carbon $revision_date
+ * @property int $level
+ * @property string $account_id
+ * @property-read \App\Models\Account|null $account
+ * @property-read \App\Models\Participant|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LoLMatch> $lolmatches
+ * @property-read int|null $lolmatches_count
+ * @method static \Database\Factories\SummonerFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner whereAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner whereIcon($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner whereLevel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Summoner whereRevisionDate($value)
+ * @mixin \Eloquent
+ */
 class Summoner extends Model
 {
     /** @use HasFactory<\Database\Factories\SummonerFactory> */
@@ -37,4 +60,10 @@ class Summoner extends Model
             ]);
     }
 
+    protected function casts(): array
+    {
+        return [
+            'revision_date' => 'datetime:Y-m-d',
+        ];
+    }
 }

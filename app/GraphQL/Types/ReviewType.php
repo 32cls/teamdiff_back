@@ -27,6 +27,14 @@ class ReviewType extends GraphQLType
             'rating' => [
                 'type' => Type::nonNull(Type::float()),
                 'description' => 'Rating of the player\'s performance'
+            ],
+            'created_at' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'Creation date of the review'
+            ],
+            'updated_at' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'Modification date of the review'
             ]
         ];
     }

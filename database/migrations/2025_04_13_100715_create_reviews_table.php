@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('content');
             $table->float('rating');
             $table->string('match_id');
+            $table->timestamps();
             $table->foreignId('author_id')->constrained(table: 'summoners', column: 'id');
             $table->foreignId('reviewed_id')->constrained(table: 'summoners', column: 'id');
             $table->foreign("match_id")->references('id')->on('lolmatches')->onDelete('cascade');

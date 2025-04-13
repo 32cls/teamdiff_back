@@ -4,6 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * 
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Participant newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Participant newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Participant query()
+ * @mixin \Eloquent
+ */
 class Participant extends Pivot
 {
     protected $fillable = [
