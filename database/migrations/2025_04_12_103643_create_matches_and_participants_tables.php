@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('matches', function (Blueprint $table) {
-            $table->id();
+        Schema::create('lolmatches', function (Blueprint $table) {
+            $table->string('id')->primary();
             $table->integer("duration")->nullable(false);
             $table->timestamp("game_creation")->nullable(false);
         });
         Schema::create('participants', function (Blueprint $table) {
-            $table->id();
+            $table->id()->primary();
             $table->integer("champion_id")->nullable(false);
             $table->integer("team_id")->nullable(false);
             $table->string("team_position")->nullable(false);
@@ -26,8 +26,9 @@ return new class extends Migration
             $table->integer("deaths")->nullable(false);
             $table->integer("assists")->nullable(false);
             $table->integer("level")->nullable(false);
+            $table->string('match_id');
             $table->foreignId("summoner_id")->constrained(table: 'summoners', column: 'id');
-            $table->foreignId("match_id")->constrained(table: 'matches', column: 'id');
+            $table->foreign("match_id")->references('id')->on('lolmatches')->onDelete('cascade');
         });
     }
 
@@ -37,6 +38,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('participants');
-        Schema::dropIfExists('matches');
+        Schema::dropIfExists('lolmatches');
     }
 };

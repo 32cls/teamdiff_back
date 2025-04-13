@@ -4,6 +4,9 @@ declare(strict_types = 1);
 
 use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
+use App\GraphQL\Types\LolmatchType;
+use App\GraphQL\Types\ParticipantType;
+use App\GraphQL\Types\SummonerType;
 
 return [
     'route' => [
@@ -86,6 +89,9 @@ return [
             // The types only available in this schema
             'types' => [
                 AccountType::class,
+                SummonerType::class,
+                LoLmatchType::class,
+                ParticipantType::class
             ],
 
             // Laravel HTTP middleware

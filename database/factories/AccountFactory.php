@@ -11,9 +11,9 @@ class AccountFactory extends Factory
     {
         return [
             'puuid' => fake()->uuid(),
-            'name' => fake()->unique()->name(),
+            'name' => fake()->unique()->userName(),
             'tag' => fake()->text(5),
-            'refreshed_at' => fake()->dateTime('now')->format('Y-m-d H:i:s'),
+            'refreshed_at' => fake()->dateTimeThisMonth('now')->format('Y-m-d H:i:s'),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\GraphQL\Types;
 
 use App\Models\Account;
 use GraphQL\Type\Definition\Type;
+use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Type as GraphQLType;
 class AccountType extends GraphQLType
 {
@@ -31,6 +32,10 @@ class AccountType extends GraphQLType
             'refreshed_at' => [
                 'type' => Type::string(),
                 'description' => 'Last time at which the account was refreshed',
+            ],
+            'summoner' => [
+                'type' => GraphQL::type('Summoner'),
+                'description' => 'Optional summoner associated with the account',
             ]
         ];
     }

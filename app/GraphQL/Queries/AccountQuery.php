@@ -3,6 +3,7 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Account;
+use App\Models\Summoner;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
