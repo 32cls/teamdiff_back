@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('summoners', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->integer("icon")->nullable(false);
-            $table->timestamp("revision_date")->nullable(false);
-            $table->integer("level")->nullable(false);
-            $table->string("account_id");
+            $table->integer("icon")->nullable();
+            $table->timestamp("revision_date")->nullable();
+            $table->integer("level")->nullable();
+            $table->string("account_id")->nullable();
             $table->foreign("account_id")->references('puuid')->on('accounts')->onDelete('cascade');
         });
     }

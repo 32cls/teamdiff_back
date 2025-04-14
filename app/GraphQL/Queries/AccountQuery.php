@@ -3,12 +3,15 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Account;
+use App\Models\LoLMatch;
 use App\Models\Summoner;
+use Carbon\Carbon;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -49,7 +52,6 @@ class AccountQuery extends Query
      */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
-
         if (isset($args['name'], $args['tag'])) {
             $account = Account::firstWhere((
                 ['name' => $args['name'], 'tag' => $args['tag']]
@@ -74,7 +76,6 @@ class AccountQuery extends Query
                     ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')->json();
                     Log::info($summoner_response);
 
-                    /** @var array */
                     $matchids_response = $client->withUrlParameters([
                         'region' => 'europe',
                         'puuid' => $account_response['puuid'],
@@ -85,17 +86,16 @@ class AccountQuery extends Query
 
                     Log::info($matchids_response);
 
-                    $matches_response = Http::pool(fn (Pool $pool) => [
-                        $pool->get('http://localhost/first'),
-                        $pool->get('http://localhost/second'),
-                        $pool->get('http://localhost/third'),
-                    ]);
+                    $matches_response = Http::pool(function (Pool $pool) use ($matchids_response) {
+                        $new_pool = $pool
+                            ->withHeaders(['X-Riot-Token' => config('riot.apikey')])
+                            ->acceptJson();
 
-                    $summoner = Summoner::create([
-                        'icon' => $account_response['profileIconId'],
-                        'revision_date' => $account_response['revisionDate'],
-                        'level' => $account_response['summonerLevel'],
-                    ]);
+                        return array_map(
+                            fn($match) => $new_pool->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
+                            $matchids_response
+                        );
+                    });
 
                     $account = Account::updateOrCreate([
                         'puuid' => $account_response['puuid'],
@@ -103,6 +103,44 @@ class AccountQuery extends Query
                         'tag' => $args['tag'],
                         'refreshed_at' => now(),
                     ]);
+
+                    $summoner = $account->summoner()->create([
+                        'id' => $summoner_response['id'],
+                        'icon' => $summoner_response['profileIconId'],
+                        'revision_date' => Carbon::createFromTimestampMs($summoner_response['revisionDate']),
+                        'level' => $summoner_response['summonerLevel'],
+                    ]);
+
+                    foreach ($matches_response as $match) {
+
+                        $lolmatch = LoLMatch::create([
+                            'id' => $match['metadata']['matchId'],
+                            'duration' => $match['info']['gameDuration'],
+                            'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
+                        ]);
+
+
+                        foreach ($match['info']['participants'] as $participant) {
+                            $participantSummoner = Summoner::firstOrCreate(
+                                ['id' => $participant['summonerId']],
+                            );
+
+                            // Attach the participant to the match via the pivot table
+                            $participantSummoner->lolmatches()->syncWithoutDetaching([
+                                $lolmatch->id => [
+                                    'champion_id' => $participant['championId'],
+                                    'team_id' => $participant['teamId'],
+                                    'team_position' => $participant['teamPosition'],
+                                    'win' => $participant['win'],
+                                    'kills' => $participant['kills'],
+                                    'deaths' => $participant['deaths'],
+                                    'assists' => $participant['assists'],
+                                    'level' => $participant['champLevel'],
+                                ]
+                            ]);
+                        }
+
+                    }
 
                 } catch (ConnectionException $e) {
                     Log::error($e->getMessage());

@@ -25,8 +25,9 @@ return new class extends Migration
             $table->integer("deaths")->nullable(false);
             $table->integer("assists")->nullable(false);
             $table->integer("level")->nullable(false);
-            $table->string('match_id');
-            $table->foreignId("summoner_id")->constrained(table: 'summoners', column: 'id');
+            $table->string('match_id')->nullable(false);
+            $table->string('summoner_id')->nullable(false);
+            $table->foreign("summoner_id")->references('id')->on('summoners')->onDelete('cascade');
             $table->foreign("match_id")->references('id')->on('lolmatches')->onDelete('cascade');
         });
     }

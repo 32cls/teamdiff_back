@@ -22,15 +22,15 @@ class SummonerType extends GraphQLType
                 'description' => 'Identifier of the summoner',
             ],
             'icon' => [
-                'type' => Type::nonNull(Type::int()),
+                'type' => Type::int(),
                 'description' => 'Icon id of the summoner',
             ],
             'level' => [
-                'type' => Type::nonNull(Type::int()),
-                'description' => 'TExperience level of the summoner',
+                'type' => Type::int(),
+                'description' => 'Experience level of the summoner',
             ],
             'revision_date' => [
-                'type' => Type::nonNull(Type::string()),
+                'type' => Type::string(),
                 'description' => 'Datetime (UTC) at which the summoner was last updated on Riot API',
             ],
             'lolmatches' => [

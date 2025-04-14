@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * 
+ *
  *
  * @property string $puuid
  * @property string $name
@@ -49,7 +49,7 @@ class Account extends Model
     protected function casts(): array
     {
         return [
-            'refreshed_at' => 'datetime:Y-m-d',
+            'refreshed_at' => 'datetime:Y-m-d H:i:s',
         ];
     }
 }

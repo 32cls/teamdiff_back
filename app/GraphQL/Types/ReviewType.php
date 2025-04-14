@@ -17,7 +17,7 @@ class ReviewType extends GraphQLType
     {
         return [
             'id' => [
-                'type' => Type::nonNull(Type::id()),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The identifier of the review',
             ],
             'content' => [

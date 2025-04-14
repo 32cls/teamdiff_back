@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $icon
@@ -37,7 +37,15 @@ class Summoner extends Model
     /** @use HasFactory<\Database\Factories\SummonerFactory> */
     use HasFactory;
 
+    protected $keyType = 'string';
     public $timestamps = false;
+
+    protected $fillable = [
+        'id',
+        'icon',
+        'revision_date',
+        'level',
+    ];
 
     public function account(): BelongsTo
     {
@@ -63,7 +71,7 @@ class Summoner extends Model
     protected function casts(): array
     {
         return [
-            'revision_date' => 'datetime:Y-m-d',
+            'revision_date' => 'datetime:Y-m-d H:i:s',
         ];
     }
 }

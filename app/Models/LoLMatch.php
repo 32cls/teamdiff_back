@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * 
+ *
  *
  * @property string $id
  * @property int $duration
@@ -34,6 +35,12 @@ class LoLMatch extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'id',
+        'duration',
+        'game_creation',
+    ];
+
     public function summoners(): BelongsToMany
     {
         return $this->belongsToMany(Summoner::class, 'participants', 'match_id', 'summoner_id')
@@ -50,10 +57,15 @@ class LoLMatch extends Model
             ]);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'match_id');
+    }
+
     protected function casts(): array
     {
         return [
-            'game_creation' => 'datetime:Y-m-d',
+            'game_creation' => 'datetime:Y-m-d H:i:s',
         ];
     }
 

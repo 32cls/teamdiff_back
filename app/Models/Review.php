@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $content
@@ -44,7 +44,7 @@ class Review extends Model
         return $this->belongsTo(Summoner::class);
     }
 
-    public function reviewed(): BelongsTo
+    public function reviewee(): BelongsTo
     {
         return $this->belongsTo(Summoner::class);
     }
