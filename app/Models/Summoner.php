@@ -43,7 +43,6 @@ class Summoner extends Model
     protected $fillable = [
         'id',
         'icon',
-        'revision_date',
         'level',
     ];
 
@@ -68,10 +67,4 @@ class Summoner extends Model
             ]);
     }
 
-    protected function casts(): array
-    {
-        return [
-            'revision_date' => 'datetime:Y-m-d H:i:s',
-        ];
-    }
 }

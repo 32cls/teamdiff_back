@@ -19,7 +19,6 @@ class SummonerFactory extends Factory
     {
         return [
             'icon' => fake()->numberBetween(0, 200),
-            'revision_date' => fake()->dateTime('now')->format('Y-m-d H:i:s'),
             'level' => fake()->numberBetween(1, 1000),
         ];
     }

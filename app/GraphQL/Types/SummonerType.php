@@ -29,10 +29,6 @@ class SummonerType extends GraphQLType
                 'type' => Type::int(),
                 'description' => 'Experience level of the summoner',
             ],
-            'revision_date' => [
-                'type' => Type::string(),
-                'description' => 'Datetime (UTC) at which the summoner was last updated on Riot API',
-            ],
             'lolmatches' => [
                 'type' => Type::listOf(GraphQL::type('LolMatch')),
                 'description' => 'History of matches played by the summoner',

@@ -97,37 +97,36 @@ class AccountQuery extends Query
                         );
                     });
 
-                    $account = Account::updateOrCreate([
-                        'puuid' => $account_response['puuid'],
-                        'name' => $args['name'],
-                        'tag' => $args['tag'],
-                        'refreshed_at' => now(),
-                    ]);
-
-                    $summoner = $account->summoner()->create([
-                        'id' => $summoner_response['id'],
-                        'icon' => $summoner_response['profileIconId'],
-                        'revision_date' => Carbon::createFromTimestampMs($summoner_response['revisionDate']),
-                        'level' => $summoner_response['summonerLevel'],
-                    ]);
-
                     foreach ($matches_response as $match) {
 
-                        $lolmatch = LoLMatch::create([
+                        $match = LoLMatch::firstOrCreate([
                             'id' => $match['metadata']['matchId'],
                             'duration' => $match['info']['gameDuration'],
                             'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
                         ]);
 
-
                         foreach ($match['info']['participants'] as $participant) {
-                            $participantSummoner = Summoner::firstOrCreate(
-                                ['id' => $participant['summonerId']],
+                            $account = Account::firstOrCreate(
+                                [ 'puuid' => $participant['puuid']],
+                                [
+                                    'name' => $participant['riotIdGameName'],
+                                    'tag' => $participant['riotIdTagline'],
+                                    'refreshed_at' => now(),
+                                ]
                             );
-
-                            // Attach the participant to the match via the pivot table
-                            $participantSummoner->lolmatches()->syncWithoutDetaching([
-                                $lolmatch->id => [
+                            Log::debug($account);
+                            $summoner = $account->summoner()->first();
+                            $summoner ??= $account->summoner()->create(
+                                [
+                                    'id' => $participant['summonerId'],
+                                    'icon' => $participant['profileIcon'],
+                                    'level' => $participant['summonerLevel'],
+                                ],
+                            );
+                            Log::debug($summoner);
+                            $summoner->lolmatches()->attach([
+                                [
+                                    'match_id' => $match->id,
                                     'champion_id' => $participant['championId'],
                                     'team_id' => $participant['teamId'],
                                     'team_position' => $participant['teamPosition'],
