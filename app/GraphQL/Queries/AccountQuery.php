@@ -4,14 +4,12 @@ namespace App\GraphQL\Queries;
 
 use App\Models\Account;
 use App\Models\LoLMatch;
-use App\Models\Summoner;
 use Carbon\Carbon;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,9 +18,14 @@ use Rebing\GraphQL\Support\Query;
 
 class AccountQuery extends Query
 {
-    const SOLO_QUEUE = 420;
-    const MATCHES_BATCH = 10;
-    const REFRESH_LIMIT_MINUTES = 10;
+    private $client;
+
+    public function __construct()
+    {
+        $this->client = Http::acceptJson()->withHeaders([
+            'X-Riot-Token' => config('riot.apikey')
+        ]);
+    }
 
     protected $attributes = [
         'name' => 'fetch_account',
@@ -47,6 +50,58 @@ class AccountQuery extends Query
         ];
     }
 
+    private function fetchAccount(string $name, string $tag)
+    {
+        try {
+            return $this->client->withUrlParameters([
+                'region' => 'europe',
+                'name' => $name,
+                'tag' => $tag
+            ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')->json();
+        } catch (ConnectionException $e) {
+            Log::error("Failed to fetch account : {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    private function fetchSummoner(string $puuid)
+    {
+        try {
+            return $this->client->withUrlParameters([
+                'region' => 'euw1',
+                'puuid' => $puuid
+            ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')->json();
+        } catch (ConnectionException $e) {
+            Log::error("Failed to fetch account : {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    private function fetchMatchesId(string $puuid)
+    {
+        try {
+            return $this->client->withUrlParameters([
+                'region' => 'europe',
+                'puuid' => $puuid,
+            ])->withQueryParameters([
+                'queue' => config("riot.queue"),
+                'count' => config("riot.matchesbatch"),
+            ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')->json();
+        } catch (ConnectionException $e) {
+            Log::error("Failed to fetch account : {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    private function fetchMatches(array $matchids): array
+    {
+        return Http::pool(fn (Pool $pool) => array_map(
+                fn($match) => $pool->withHeaders(['X-Riot-Token' => config('riot.apikey')])
+                    ->acceptJson()->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
+                $matchids)
+        );
+    }
+
     /**
      * @throws Error
      */
@@ -56,57 +111,37 @@ class AccountQuery extends Query
             $account = Account::firstWhere((
                 ['name' => $args['name'], 'tag' => $args['tag']]
             ));
-            if (!$account || now()->diffInMinutes($account->refreshed_at) > self::REFRESH_LIMIT_MINUTES) {
-                $client = Http::acceptJson()->withHeaders([
-                    'X-Riot-Token' => config('riot.apikey')
-                ]);
+            if (!$account || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
                 try {
-                    Log::info('Miaou2');
-                    $account_response = $client->withUrlParameters([
-                        'region' => 'europe',
-                        'name' => $args['name'],
-                        'tag' => $args['tag']
-                    ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')->json();
+                    $account_response = $this->fetchAccount($args['name'], $args['tag']);
 
                     Log::info($account_response);
 
-                    $summoner_response = $client->withUrlParameters([
-                        'region' => 'euw1',
-                        'puuid' => $account_response['puuid'],
-                    ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')->json();
+                    $summoner_response = $this->fetchSummoner($account_response['puuid']);
+
                     Log::info($summoner_response);
 
-                    $matchids_response = $client->withUrlParameters([
-                        'region' => 'europe',
-                        'puuid' => $account_response['puuid'],
-                    ])->withQueryParameters([
-                        'queue' => self::SOLO_QUEUE,
-                        'count' => self::MATCHES_BATCH,
-                    ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')->json();
+                    $matchids_response =$this->fetchMatchesId($account_response['puuid']);
 
                     Log::info($matchids_response);
 
-                    $matches_response = Http::pool(function (Pool $pool) use ($matchids_response) {
-                        $new_pool = $pool
-                            ->withHeaders(['X-Riot-Token' => config('riot.apikey')])
-                            ->acceptJson();
-
-                        return array_map(
-                            fn($match) => $new_pool->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
-                            $matchids_response
-                        );
-                    });
+                    $matches_response = $this->fetchMatches($matchids_response);
+                    Log::debug(implode($matches_response));
 
                     foreach ($matches_response as $match) {
 
-                        $match = LoLMatch::firstOrCreate([
-                            'id' => $match['metadata']['matchId'],
-                            'duration' => $match['info']['gameDuration'],
-                            'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
-                        ]);
+                        $lolmatch = LoLMatch::firstOrCreate([
+                                'id' => $match['metadata']['matchId']
+                            ],
+                            [
+                                'duration' => $match['info']['gameDuration'],
+                                'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
+                            ]
+                        );
 
                         foreach ($match['info']['participants'] as $participant) {
-                            $account = Account::firstOrCreate(
+                            Log::debug($participant);
+                            $accountLoop = Account::firstOrCreate(
                                 [ 'puuid' => $participant['puuid']],
                                 [
                                     'name' => $participant['riotIdGameName'],
@@ -114,9 +149,9 @@ class AccountQuery extends Query
                                     'refreshed_at' => now(),
                                 ]
                             );
-                            Log::debug($account);
-                            $summoner = $account->summoner()->first();
-                            $summoner ??= $account->summoner()->create(
+                            Log::debug($accountLoop);
+                            $summoner = $accountLoop->summoner()->first();
+                            $summoner ??= $accountLoop->summoner()->create(
                                 [
                                     'id' => $participant['summonerId'],
                                     'icon' => $participant['profileIcon'],
@@ -126,7 +161,7 @@ class AccountQuery extends Query
                             Log::debug($summoner);
                             $summoner->lolmatches()->attach([
                                 [
-                                    'match_id' => $match->id,
+                                    'match_id' => $lolmatch->id,
                                     'champion_id' => $participant['championId'],
                                     'team_id' => $participant['teamId'],
                                     'team_position' => $participant['teamPosition'],
@@ -149,7 +184,7 @@ class AccountQuery extends Query
             return $account;
         }
         else {
-            throw new Error('Account not found');
+            throw new Error('Bad request, missing arguments');
         }
     }
 }

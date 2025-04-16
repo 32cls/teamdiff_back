@@ -22,11 +22,11 @@ class SummonerType extends GraphQLType
                 'description' => 'Identifier of the summoner',
             ],
             'icon' => [
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'Icon id of the summoner',
             ],
             'level' => [
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'Experience level of the summoner',
             ],
             'lolmatches' => [
