@@ -4,6 +4,7 @@ namespace App\GraphQL\Queries;
 
 use App\Models\Account;
 use App\Models\LoLMatch;
+use App\Models\Participant;
 use Carbon\Carbon;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -117,9 +118,11 @@ class AccountQuery extends Query
                 ]
             );
 
+            Log::debug($lolmatch);
+
             foreach ($match['info']['participants'] as $participant) {
                 Log::debug($participant);
-                $account = Account::firstOrCreate(
+                $account = Account::firstOrNew(
                     [ 'puuid' => $participant['puuid']],
                     [
                         'name' => $participant['riotIdGameName'],
@@ -137,9 +140,8 @@ class AccountQuery extends Query
                     ],
                 );
                 Log::debug($summoner);
-                $summoner->lolmatches()->attach([
+                $participant_model = Participant::make(
                     [
-                        'match_id' => $lolmatch->id,
                         'champion_id' => $participant['championId'],
                         'team_id' => $participant['teamId'],
                         'team_position' => $participant['teamPosition'],
@@ -149,7 +151,10 @@ class AccountQuery extends Query
                         'assists' => $participant['assists'],
                         'level' => $participant['champLevel'],
                     ]
-                ]);
+                );
+                $participant_model->lolmatch()->associate($lolmatch);
+                $participant_model->summoner()->associate($summoner);
+                $participant_model->save();
                 if ($puuid == $account->puuid)
                 {
                     $return_account = $account;
@@ -161,28 +166,33 @@ class AccountQuery extends Query
 
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
-        $account = Account::firstWhere((
+        /** @var SelectFields $fields */
+        $fields = $getSelectFields();
+        $select = $fields->getSelect();
+        $with = $fields->getRelations();
+
+        $account = Account::select($select)->with($with)->firstWhere((
             ['name' => $args['name'], 'tag' => $args['tag']]
         ));
         if (!$account || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
             $account_response = $this->fetchAccount($args['name'], $args['tag']);
             $puuid = $account_response['puuid'];
 
-            Log::info($account_response);
+            Log::debug($account_response);
 
             $summoner_response = $this->fetchSummoner($puuid);
 
-            Log::info($summoner_response);
+            Log::debug($summoner_response);
 
-            $matchids_response =$this->fetchMatchesId($puuid);
+            $matchids_response = $this->fetchMatchesId($puuid);
 
-            Log::info($matchids_response);
+            Log::debug($matchids_response);
 
             $matches_response = $this->fetchMatches($matchids_response);
             Log::debug(implode($matches_response));
 
             $account = $this->createCompleteMatches($matches_response, $puuid);
-
+            $account = Account::select($select)->with($with)->find($account->id);
         }
         return $account;
     }

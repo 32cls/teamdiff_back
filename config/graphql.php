@@ -2,11 +2,12 @@
 
 declare(strict_types = 1);
 
+use App\GraphQL\Inputs\ReviewInput;
 use App\GraphQL\Mutations\CreateReviewMutation;
 use App\GraphQL\Mutations\DeleteReviewMutation;
 use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
-use App\GraphQL\Types\LolMatchType;
+use App\GraphQL\Types\LoLMatchType;
 use App\GraphQL\Types\ParticipantType;
 use App\GraphQL\Types\ReviewType;
 use App\GraphQL\Types\SummonerType;
@@ -94,9 +95,10 @@ return [
             'types' => [
                 AccountType::class,
                 SummonerType::class,
-                LolMatchType::class,
+                LoLMatchType::class,
                 ParticipantType::class,
-                ReviewType::class
+                ReviewType::class,
+                ReviewInput::class,
             ],
 
             // Laravel HTTP middleware

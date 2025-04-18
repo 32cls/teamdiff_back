@@ -45,12 +45,16 @@ class ParticipantType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Level of the champion played by the summoner',
             ],
-            'reviews' => [
+            'wrotereviews' => [
                 'type' => Type::listOf(GraphQL::type('Review')),
-                'description' => 'List of reviews of the summoner in the match',
+                'description' => 'List of reviews written by the summoner in the match',
+            ],
+            'receivedreviews' => [
+                'type' => Type::listOf(GraphQL::type('Review')),
+                'description' => 'List of reviews received by the summoner in the match',
             ],
             'lolmatch' => [
-                'type' => Type::nonNull(GraphQL::type('LoLMatch')),
+                'type' => GraphQL::type('LolMatch'),
                 'description' => 'Related match linked to player participation',
             ]
         ];

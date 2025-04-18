@@ -7,7 +7,7 @@ use App\Models\LoLMatch;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Type as GraphQLType;
 
-class LolMatchType extends GraphQLType
+class LoLMatchType extends GraphQLType
 {
     protected $attributes = [
         'name' => 'LolMatch',

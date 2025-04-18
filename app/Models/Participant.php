@@ -24,14 +24,30 @@ class Participant extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'champion_id',
+        'team_id',
+        'team_position',
+        'win',
+        'kills',
+        'deaths',
+        'assists',
+        'level',
+    ];
+
     public function summoner(): BelongsTo
     {
         return $this->belongsTo(Summoner::class, 'summoner_id');
     }
 
-    public function reviews(): HasMany
+    public function wrotereviews(): HasMany
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    public function receivedreviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewee_id');
     }
 
     public function lolmatch(): BelongsTo

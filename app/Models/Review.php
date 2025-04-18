@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 /**
  *
@@ -47,16 +48,12 @@ class Review extends Model
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(Summoner::class);
+        return $this->belongsTo(Participant::class, 'reviewer_id');
     }
 
     public function reviewee(): BelongsTo
     {
-        return $this->belongsTo(Summoner::class);
+        return $this->belongsTo(Participant::class, 'reviewee_id');
     }
 
-    public function match(): BelongsTo
-    {
-        return $this->belongsTo(LoLMatch::class);
-    }
 }

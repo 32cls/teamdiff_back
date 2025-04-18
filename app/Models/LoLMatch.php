@@ -35,7 +35,9 @@ class LoLMatch extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id'
+        'id',
+        'duration',
+        'game_creation'
     ];
 
     public function participants(): HasMany
