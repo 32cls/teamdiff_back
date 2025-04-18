@@ -39,7 +39,13 @@ class Review extends Model
     /** @use HasFactory<\Database\Factories\ReviewFactory> */
     use HasFactory;
 
-    public function author(): BelongsTo
+    protected $fillable = [
+        'content',
+        'rating',
+        'reviewee_id',
+    ];
+
+    public function reviewer(): BelongsTo
     {
         return $this->belongsTo(Summoner::class);
     }

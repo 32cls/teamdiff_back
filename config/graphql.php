@@ -2,6 +2,8 @@
 
 declare(strict_types = 1);
 
+use App\GraphQL\Mutations\CreateReviewMutation;
+use App\GraphQL\Mutations\DeleteReviewMutation;
 use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
 use App\GraphQL\Types\LolMatchType;
@@ -85,7 +87,8 @@ return [
                 AccountQuery::class
             ],
             'mutation' => [
-                // ExampleMutation::class,
+                CreateReviewMutation::class,
+                DeleteReviewMutation::class,
             ],
             // The types only available in this schema
             'types' => [

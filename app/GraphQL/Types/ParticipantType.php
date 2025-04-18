@@ -48,6 +48,10 @@ class ParticipantType extends GraphQLType
             'reviews' => [
                 'type' => Type::listOf(GraphQL::type('Review')),
                 'description' => 'List of reviews of the summoner in the match',
+            ],
+            'lolmatch' => [
+                'type' => Type::nonNull(GraphQL::type('LoLMatch')),
+                'description' => 'Related match linked to player participation',
             ]
         ];
     }

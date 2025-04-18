@@ -30,15 +30,10 @@ class LolMatchType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Datetime (UTC) at which the match was created',
             ],
-            'summoners' => [
+            'participants' => [
                 'type' => Type::listOf(GraphQL::type('Participant')),
-                'description' => 'List of summoners in the match',
-                'resolve' => function($match) {
-                    return $match->summoners->map(function($summoner) {
-                        return $summoner->pivot;
-                    });
-                }
-            ]
+                'description' => 'List of participants in the match',
+            ],
         ];
     }
 

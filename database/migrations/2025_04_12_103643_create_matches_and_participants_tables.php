@@ -17,6 +17,7 @@ return new class extends Migration
             $table->timestamp("game_creation")->nullable(false);
         });
         Schema::create('participants', function (Blueprint $table) {
+            $table->id();
             $table->integer("champion_id")->nullable(false);
             $table->integer("team_id")->nullable(false);
             $table->string("team_position")->nullable(false);

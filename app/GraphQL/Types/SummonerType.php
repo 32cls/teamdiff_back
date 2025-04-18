@@ -29,10 +29,10 @@ class SummonerType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Experience level of the summoner',
             ],
-            'lolmatches' => [
-                'type' => Type::listOf(GraphQL::type('LolMatch')),
-                'description' => 'History of matches played by the summoner',
-            ]
+            'participants' => [
+                'type' => Type::listOf(GraphQL::type('Participant')),
+                'description' => 'History of participation of the summoner',
+            ],
         ];
     }
 }

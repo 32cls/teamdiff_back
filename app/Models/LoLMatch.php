@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $id
  * @property int $duration
  * @property \Illuminate\Support\Carbon $game_creation
- * @property-read \App\Models\Participant|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Summoner> $summoners
  * @property-read int|null $summoners_count
  * @method static \Database\Factories\LoLMatchFactory factory($count = null, $state = [])
@@ -36,30 +35,12 @@ class LoLMatch extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id',
-        'duration',
-        'game_creation',
+        'id'
     ];
 
-    public function summoners(): BelongsToMany
+    public function participants(): HasMany
     {
-        return $this->belongsToMany(Summoner::class, 'participants', 'match_id', 'summoner_id')
-            ->using(Participant::class)
-            ->withPivot([
-                'champion_id',
-                'team_id',
-                'team_position',
-                'win',
-                'kills',
-                'deaths',
-                'assists',
-                'level'
-            ]);
-    }
-
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class, 'match_id');
+        return $this->hasMany(Participant::class, 'match_id');
     }
 
     protected function casts(): array

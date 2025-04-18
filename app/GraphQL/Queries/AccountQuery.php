@@ -6,7 +6,6 @@ use App\Models\Account;
 use App\Models\LoLMatch;
 use Carbon\Carbon;
 use Closure;
-use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\Client\ConnectionException;
@@ -42,10 +41,12 @@ class AccountQuery extends Query
             'name' => [
                 'type' => Type::string(),
                 'description' => 'The account name',
+                'rules' => ['required'],
             ],
             'tag' => [
                 'type' => Type::string(),
                 'description' => 'The account tag',
+                'rules' => ['required'],
             ],
         ];
     }
@@ -102,89 +103,87 @@ class AccountQuery extends Query
         );
     }
 
-    /**
-     * @throws Error
-     */
+    private function createCompleteMatches(array $matches, string $puuid)
+    {
+        $return_account = null;
+        foreach ($matches as $match) {
+
+            $lolmatch = LoLMatch::firstOrCreate([
+                'id' => $match['metadata']['matchId']
+            ],
+                [
+                    'duration' => $match['info']['gameDuration'],
+                    'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
+                ]
+            );
+
+            foreach ($match['info']['participants'] as $participant) {
+                Log::debug($participant);
+                $account = Account::firstOrCreate(
+                    [ 'puuid' => $participant['puuid']],
+                    [
+                        'name' => $participant['riotIdGameName'],
+                        'tag' => $participant['riotIdTagline'],
+                        'refreshed_at' => now(),
+                    ]
+                );
+                Log::debug($account);
+                $summoner = $account->summoner()->first();
+                $summoner ??= $account->summoner()->create(
+                    [
+                        'id' => $participant['summonerId'],
+                        'icon' => $participant['profileIcon'],
+                        'level' => $participant['summonerLevel'],
+                    ],
+                );
+                Log::debug($summoner);
+                $summoner->lolmatches()->attach([
+                    [
+                        'match_id' => $lolmatch->id,
+                        'champion_id' => $participant['championId'],
+                        'team_id' => $participant['teamId'],
+                        'team_position' => $participant['teamPosition'],
+                        'win' => $participant['win'],
+                        'kills' => $participant['kills'],
+                        'deaths' => $participant['deaths'],
+                        'assists' => $participant['assists'],
+                        'level' => $participant['champLevel'],
+                    ]
+                ]);
+                if ($puuid == $account->puuid)
+                {
+                    $return_account = $account;
+                }
+            }
+        }
+        return $return_account;
+    }
+
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
-        if (isset($args['name'], $args['tag'])) {
-            $account = Account::firstWhere((
-                ['name' => $args['name'], 'tag' => $args['tag']]
-            ));
-            if (!$account || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
-                try {
-                    $account_response = $this->fetchAccount($args['name'], $args['tag']);
+        $account = Account::firstWhere((
+            ['name' => $args['name'], 'tag' => $args['tag']]
+        ));
+        if (!$account || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
+            $account_response = $this->fetchAccount($args['name'], $args['tag']);
+            $puuid = $account_response['puuid'];
 
-                    Log::info($account_response);
+            Log::info($account_response);
 
-                    $summoner_response = $this->fetchSummoner($account_response['puuid']);
+            $summoner_response = $this->fetchSummoner($puuid);
 
-                    Log::info($summoner_response);
+            Log::info($summoner_response);
 
-                    $matchids_response =$this->fetchMatchesId($account_response['puuid']);
+            $matchids_response =$this->fetchMatchesId($puuid);
 
-                    Log::info($matchids_response);
+            Log::info($matchids_response);
 
-                    $matches_response = $this->fetchMatches($matchids_response);
-                    Log::debug(implode($matches_response));
+            $matches_response = $this->fetchMatches($matchids_response);
+            Log::debug(implode($matches_response));
 
-                    foreach ($matches_response as $match) {
+            $account = $this->createCompleteMatches($matches_response, $puuid);
 
-                        $lolmatch = LoLMatch::firstOrCreate([
-                                'id' => $match['metadata']['matchId']
-                            ],
-                            [
-                                'duration' => $match['info']['gameDuration'],
-                                'game_creation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
-                            ]
-                        );
-
-                        foreach ($match['info']['participants'] as $participant) {
-                            Log::debug($participant);
-                            $accountLoop = Account::firstOrCreate(
-                                [ 'puuid' => $participant['puuid']],
-                                [
-                                    'name' => $participant['riotIdGameName'],
-                                    'tag' => $participant['riotIdTagline'],
-                                    'refreshed_at' => now(),
-                                ]
-                            );
-                            Log::debug($accountLoop);
-                            $summoner = $accountLoop->summoner()->first();
-                            $summoner ??= $accountLoop->summoner()->create(
-                                [
-                                    'id' => $participant['summonerId'],
-                                    'icon' => $participant['profileIcon'],
-                                    'level' => $participant['summonerLevel'],
-                                ],
-                            );
-                            Log::debug($summoner);
-                            $summoner->lolmatches()->attach([
-                                [
-                                    'match_id' => $lolmatch->id,
-                                    'champion_id' => $participant['championId'],
-                                    'team_id' => $participant['teamId'],
-                                    'team_position' => $participant['teamPosition'],
-                                    'win' => $participant['win'],
-                                    'kills' => $participant['kills'],
-                                    'deaths' => $participant['deaths'],
-                                    'assists' => $participant['assists'],
-                                    'level' => $participant['champLevel'],
-                                ]
-                            ]);
-                        }
-
-                    }
-
-                } catch (ConnectionException $e) {
-                    Log::error($e->getMessage());
-                }
-
-            }
-            return $account;
         }
-        else {
-            throw new Error('Bad request, missing arguments');
-        }
+        return $account;
     }
 }

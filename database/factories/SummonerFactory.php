@@ -18,6 +18,7 @@ class SummonerFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->uuid(),
             'icon' => fake()->numberBetween(0, 200),
             'level' => fake()->numberBetween(1, 1000),
         ];

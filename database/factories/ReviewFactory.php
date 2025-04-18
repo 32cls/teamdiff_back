@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Participant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +19,9 @@ class ReviewFactory extends Factory
     {
         return [
             'content' => fake()->paragraph(),
-            'rating' => fake()->randomFloat(1,0,5)
+            'rating' => fake()->randomFloat(1,0,5),
+            'reviewee_id' => Participant::factory(),
+            'reviewer_id' => Participant::factory(),
         ];
     }
 }

@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $level
  * @property string $account_id
  * @property-read \App\Models\Account|null $account
- * @property-read \App\Models\Participant|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LoLMatch> $lolmatches
  * @property-read int|null $lolmatches_count
  * @method static \Database\Factories\SummonerFactory factory($count = null, $state = [])
@@ -51,20 +50,9 @@ class Summoner extends Model
         return $this->belongsTo(Account::class, 'puuid');
     }
 
-    public function lolmatches(): BelongsToMany
+    public function participants(): HasMany
     {
-        return $this->belongsToMany(LolMatch::class, 'participants', 'summoner_id', 'match_id')
-            ->using(Participant::class)
-            ->withPivot([
-                'champion_id',
-                'team_id',
-                'team_position',
-                'win',
-                'kills',
-                'deaths',
-                'assists',
-                'level'
-            ]);
+        return $this->hasMany(Participant::class, 'summoner_id');
     }
 
 }

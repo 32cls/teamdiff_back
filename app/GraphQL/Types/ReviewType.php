@@ -5,10 +5,12 @@ namespace App\GraphQL\Types;
 use App\Models\Review;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Type as GraphQLType;
+use Rebing\GraphQL\Support\Facades\GraphQL;
+
 class ReviewType extends GraphQLType
 {
     protected $attributes = [
-        'name' => 'Review',
+        'name' => 'ReviewSeeder',
         'description' => 'A review for a game',
         'model' => Review::class,
     ];
@@ -17,7 +19,7 @@ class ReviewType extends GraphQLType
     {
         return [
             'id' => [
-                'type' => Type::nonNull(Type::string()),
+                'type' => Type::nonNull(Type::id()),
                 'description' => 'The identifier of the review',
             ],
             'content' => [
@@ -35,6 +37,18 @@ class ReviewType extends GraphQLType
             'updated_at' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Modification date of the review'
+            ],
+            'reviewer' => [
+                'type' => Type::nonNull(GraphQL::type('Participant')),
+                'description' => 'Reviewer (author) of the review'
+            ],
+            'reviewee' => [
+                'type' => Type::nonNull(GraphQL::type('Participant')),
+                'description' => 'Reviewee (recipient) of the review'
+            ],
+            'match' => [
+                'type' => Type::nonNull(GraphQL::type('LolMatch')),
+                'description' => 'Match review is related to'
             ]
         ];
     }
