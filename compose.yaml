@@ -12,8 +12,6 @@ services:
       - .env
     networks:
       - teamdiff
-    command: |
-      sh -c "php artisan migrate --force && php-fpm"
     user: 1000:1000
   nginx:
     build:
