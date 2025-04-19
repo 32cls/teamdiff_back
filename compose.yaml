@@ -1,24 +1,47 @@
 services:
-
-  #app:
-  #  depends_on:
-  #    - db
-  #  build:
-  #    dockerfile: Dockerfile
-  #  ports:
-  #    - 8080:8080
-  #  env_file:
-  #    - .env
+  app:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: teamdiff_app
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    networks:
+      - teamdiff
+    command: |
+      sh -c "php artisan migrate --force && php-fpm"
+  nginx:
+    image: nginx:stable-alpine
+    container_name: teamdiff_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - teamdiff
   db:
     image: postgres
     restart: always
     shm_size: 128mb
+    container_name: teamdiff_db
     ports:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: teamdiff
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - teamdiff
   meili:
     image: getmeili/meilisearch:v1.14
+    container_name: teamdiff_meili
     restart: always
     ports:
       - 7700:7700
@@ -26,6 +49,12 @@ services:
       MEILI_MASTER_KEY: miaou
     volumes:
       - meili_data:/meili_data
+    networks:
+      - teamdiff
 
 volumes:
   meili_data:
+  pgdata:
+
+networks:
+  teamdiff:
