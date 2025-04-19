@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Scout\Searchable;
 
 /**
  *
@@ -27,7 +27,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Account extends Model
 {
+
     use HasFactory;
+    use Searchable;
 
     protected $primaryKey = 'puuid';
     public $incrementing = false;
@@ -51,6 +53,11 @@ class Account extends Model
         return [
             'refreshed_at' => 'datetime:Y-m-d H:i:s',
         ];
+    }
+
+    public function toSearchableArray(): array
+    {
+       return [$this->name, $this->tag];
     }
 }
 
