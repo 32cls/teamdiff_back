@@ -28,4 +28,4 @@ jobs:
           context: .
           file: docker/php/Dockerfile
           push: true
-          tags: 32cls/${{ github.event.repository.name }}:latest
+          tags: ghcr.io/32cls/${{ github.event.repository.name }}:latest
