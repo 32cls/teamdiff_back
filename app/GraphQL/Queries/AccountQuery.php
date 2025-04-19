@@ -2,6 +2,7 @@
 
 namespace App\GraphQL\Queries;
 
+use App\GraphQL\Traits\RateLimited;
 use App\Models\Account;
 use App\Models\LoLMatch;
 use App\Models\Participant;
@@ -12,13 +13,16 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Pool;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 
 class AccountQuery extends Query
 {
+    use RateLimited;
     private $client;
 
     public function __construct()
@@ -227,8 +231,13 @@ class AccountQuery extends Query
         return $return_account;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
+        $this->enforceRateLimit('AccountQuery', 20);
+
         /** @var SelectFields $fields */
         $fields = $getSelectFields();
         $select = $fields->getSelect();

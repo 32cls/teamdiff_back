@@ -2,6 +2,7 @@
 
 namespace App\GraphQL\Mutations;
 
+use App\GraphQL\Traits\RateLimited;
 use App\Models\LoLMatch;
 use App\Models\Participant;
 use App\Models\Review;
@@ -16,6 +17,8 @@ use GraphQL\Type\Definition\Type;
 
 class CreateReviewMutation extends Mutation
 {
+
+    use RateLimited;
 
     protected $attributes = [
         'name' => 'create_review',
@@ -37,9 +40,11 @@ class CreateReviewMutation extends Mutation
 
     /**
      * @throws Error
+     * @throws \Exception
      */
     public function resolve($root, $args, $context, ResolveInfo $info, Closure $getSelectFields)
     {
+        $this->enforceRateLimit('CreateReviewMutation', 9);
         /** @var SelectFields $fields */
         $fields = $getSelectFields();
         $select = $fields->getSelect();
