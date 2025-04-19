@@ -143,7 +143,8 @@ return [
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
             Account::class => [
-                'filterableAttributes' => ['name', 'tag']
+                'filterableAttributes' => ['name', 'tag'],
+                'searchableAttributes' => ['name', 'tag'],
             ]
         ],
     ],

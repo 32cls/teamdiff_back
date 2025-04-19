@@ -57,7 +57,10 @@ class Account extends Model
 
     public function toSearchableArray(): array
     {
-       return [$this->name, $this->tag];
+       return [
+           'name' => $this->name,
+           'tag' => $this->tag
+       ];
     }
 }
 
