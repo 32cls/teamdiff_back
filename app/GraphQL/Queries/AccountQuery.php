@@ -98,10 +98,14 @@ class AccountQuery extends Query
 
     private function fetchMatches(array $matchids): array
     {
+        $found = LoLMatch::whereIn('id', $matchids)->get();
+        Log::debug($found);
+        $missing_matches = collect($matchids)->diff($found)->toArray();
+        Log::debug(implode($missing_matches));
         return Http::pool(fn (Pool $pool) => array_map(
                 fn($match) => $pool->withHeaders(['X-Riot-Token' => config('riot.apikey')])
                     ->acceptJson()->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
-                $matchids)
+                $missing_matches)
         );
     }
 
