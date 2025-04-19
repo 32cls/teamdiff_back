@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('summoner_id')->nullable(false);
             $table->foreign("summoner_id")->references('id')->on('summoners')->onDelete('cascade');
             $table->foreign("match_id")->references('id')->on('lolmatches')->onDelete('cascade');
+            $table->unique(['match_id', 'summoner_id']);
         });
     }
 

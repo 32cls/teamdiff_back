@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamps();
             $table->foreignId('reviewer_id')->constrained('participants', 'id');
             $table->foreignId('reviewee_id')->constrained('participants', 'id');
+            $table->softDeletes();
         });
     }
 

@@ -13,9 +13,23 @@ class SummonerSeeder extends Seeder
     public function run(): void
     {
         $summoners = Summoner::take(10)->get();
-        Log::debug($summoners);
-        LoLMatch::factory()->has(
-            Participant::factory()->recycle($summoners)->count(10)
-        )->count(10)->create();
+
+        LoLMatch::factory()
+            ->count(10) // create 10 matches
+            ->create()
+            ->each(function ($match) use ($summoners) {
+
+                // Shuffle to avoid duplicates and take a unique set
+                $uniqueSummoners = $summoners->shuffle()->take(10);
+
+                foreach ($uniqueSummoners as $summoner) {
+                    Participant::factory()
+                        ->recycle($summoner) // reuse the same summoner instance
+                        ->create([
+                            'match_id' => $match->id,
+                            'summoner_id' => $summoner->id,
+                        ]);
+                }
+            });
     }
 }
