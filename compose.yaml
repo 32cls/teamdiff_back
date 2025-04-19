@@ -16,7 +16,9 @@ services:
       sh -c "php artisan migrate --force && php-fpm"
     user: 1000:1000
   nginx:
-    image: nginx:stable-alpine
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
     container_name: teamdiff_nginx
     ports:
       - "8080:80"
