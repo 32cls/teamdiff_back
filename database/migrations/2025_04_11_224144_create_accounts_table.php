@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string("puuid")->primary();
             $table->string("name")->nullable(false);
             $table->string("tag")->nullable(false);
-            $table->date("refreshed_at")->nullable(false);
+            $table->date("refreshed_at")->nullable();
         });
     }
 

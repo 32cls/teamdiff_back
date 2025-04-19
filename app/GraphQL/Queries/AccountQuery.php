@@ -136,11 +136,11 @@ class AccountQuery extends Query
 
         $newAccounts = $puuids
             ->diff($existingAccounts->keys())
-            ->map(fn($puuid) => [
-                'puuid' => $puuid,
-                'name' => optional($participants->firstWhere('puuid', $puuid))['riotIdGameName'],
-                'tag' => optional($participants->firstWhere('puuid', $puuid))['riotIdTagline'],
-                'refreshed_at' => now(),
+            ->map(fn($map_puuid) => [
+                'puuid' => $map_puuid,
+                'name' => optional($participants->firstWhere('puuid', $map_puuid))['riotIdGameName'],
+                'tag' => optional($participants->firstWhere('puuid', $map_puuid))['riotIdTagline'],
+                'refreshed_at' => $map_puuid == $puuid ? now() : null,
             ])
             ->unique('puuid')  // Prevent duplicate puuids
             ->values()
@@ -148,6 +148,8 @@ class AccountQuery extends Query
 
         if (!empty($newAccounts)) {
             Account::upsert($newAccounts, ['puuid'], ['name', 'tag', 'refreshed_at']);
+            $ids = collect($newAccounts)->pluck('puuid')->all();
+            Account::whereIn('puuid', $ids)->get()->searchable();
         }
 
         $accounts = Account::whereIn('puuid', $puuids)->get()->keyBy('puuid');
@@ -231,7 +233,7 @@ class AccountQuery extends Query
         $account = Account::select($select)->with($with)->firstWhere((
             ['name' => $args['name'], 'tag' => $args['tag']]
         ));
-        if (!$account || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
+        if (!$account || !$account->refreshed_at || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
             $account_response = $this->fetchAccount($args['name'], $args['tag']);
             $puuid = $account_response['puuid'];
 
