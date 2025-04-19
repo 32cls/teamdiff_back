@@ -26,5 +26,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: docker/php/Dockerfile
           push: true
           tags: 32cls/${{ github.event.repository.name }}:latest
