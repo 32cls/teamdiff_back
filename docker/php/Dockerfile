@@ -19,4 +19,4 @@ WORKDIR /var/www/html
 
 COPY . .
 
-CMD ["php-fpm"]
+CMD ["sh", "-c", "\"php artisan migrate --force && php-fpm\""]
