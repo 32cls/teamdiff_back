@@ -156,8 +156,6 @@ class AccountQuery extends Query
 
         if (!empty($newAccounts)) {
             Account::upsert($newAccounts, ['puuid'], ['name', 'tag', 'refreshed_at']);
-            $ids = collect($newAccounts)->pluck('puuid')->all();
-            Account::whereIn('puuid', $ids)->get()->searchable();
         }
 
         $accounts = Account::whereIn('puuid', $puuids)->get()->keyBy('puuid');
@@ -180,6 +178,8 @@ class AccountQuery extends Query
 
         if (!empty($newSummoners)) {
             Summoner::upsert($newSummoners, ['id'], ['account_id', 'icon', 'level']);
+            $account_ids = collect($newSummoners)->pluck('account_id')->unique();
+            Account::whereIn('puuid', $account_ids)->searchable();
         }
 
         $summoners = Summoner::whereIn('id', $summonerIds)->get()->keyBy('id');
@@ -237,8 +237,7 @@ class AccountQuery extends Query
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
         $this->enforceRateLimit('AccountQuery', 20);
-
-        /** @var SelectFields $fields */
+        
         $fields = $getSelectFields();
         $select = $fields->getSelect();
         $with = $fields->getRelations();

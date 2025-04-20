@@ -144,7 +144,7 @@ return [
         'index-settings' => [
             Account::class => [
                 'filterableAttributes' => ['name', 'tag'],
-                'searchableAttributes' => ['name', 'tag'],
+                'searchableAttributes' => ['name', 'tag', 'icon'],
             ]
         ],
     ],
