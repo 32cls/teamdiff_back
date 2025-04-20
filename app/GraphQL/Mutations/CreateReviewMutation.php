@@ -33,7 +33,7 @@ class CreateReviewMutation extends Mutation
     {
         return [
             'input' => [
-                'type' => GraphQL::type('ReviewInput'),
+                'type' => Type::nonNull(GraphQL::type('ReviewInput')),
             ]
         ];
     }

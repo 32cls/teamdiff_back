@@ -9,14 +9,14 @@ use App\Models\Participant;
 use App\Models\Summoner;
 use Carbon\Carbon;
 use Closure;
+use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Pool;
-use Illuminate\Support\Facades\Context;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 
@@ -47,43 +47,54 @@ class AccountQuery extends Query
             'name' => [
                 'type' => Type::string(),
                 'description' => 'The account name',
-                'rules' => ['required'],
+                'rules' => ['required', 'min:3', 'max:16'],
             ],
             'tag' => [
                 'type' => Type::string(),
                 'description' => 'The account tag',
-                'rules' => ['required'],
+                'rules' => ['required', 'min:3', 'max:5'],
             ],
         ];
     }
 
+    /**
+     * @throws Error
+     */
     private function fetchAccount(string $name, string $tag)
     {
         try {
-            return $this->client->withUrlParameters([
+             return $this->client->withUrlParameters([
                 'region' => 'europe',
                 'name' => $name,
                 'tag' => $tag
-            ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')->json();
-        } catch (ConnectionException $e) {
-            Log::error("Failed to fetch account : {$e->getMessage()}");
-            return null;
+            ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')
+                ->throw()
+                ->json();
+        } catch (ConnectionException | RequestException $e) {
+            throw new Error("Failed to fetch account : {$e->getMessage()}");
         }
     }
 
+    /**
+     * @throws Error
+     */
     private function fetchSummoner(string $puuid)
     {
         try {
             return $this->client->withUrlParameters([
                 'region' => 'euw1',
                 'puuid' => $puuid
-            ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')->json();
-        } catch (ConnectionException $e) {
-            Log::error("Failed to fetch account : {$e->getMessage()}");
-            return null;
+            ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')
+                ->throw()
+                ->json();
+        } catch (ConnectionException | RequestException $e) {
+            throw new Error("Failed to fetch summoner : {$e->getMessage()}");
         }
     }
 
+    /**
+     * @throws Error
+     */
     private function fetchMatchesId(string $puuid)
     {
         try {
@@ -93,24 +104,27 @@ class AccountQuery extends Query
             ])->withQueryParameters([
                 'queue' => config("riot.queue"),
                 'count' => config("riot.matchesbatch"),
-            ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')->json();
-        } catch (ConnectionException $e) {
-            Log::error("Failed to fetch account : {$e->getMessage()}");
-            return null;
+            ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')
+                ->throw()
+                ->json();
+        } catch (ConnectionException | RequestException $e) {
+            throw new Error("Failed to fetch match ids : {$e->getMessage()}");
         }
     }
 
     private function fetchMatches(array $matchids): array
     {
         $found = LoLMatch::whereIn('id', $matchids)->get();
-        Log::debug($found);
         $missing_matches = collect($matchids)->diff($found)->toArray();
-        Log::debug(implode($missing_matches));
-        return Http::pool(fn (Pool $pool) => array_map(
+        $pool = Http::pool(fn (Pool $pool) => array_map(
                 fn($match) => $pool->withHeaders(['X-Riot-Token' => config('riot.apikey')])
                     ->acceptJson()->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
                 $missing_matches)
         );
+        foreach ($pool as $response) {
+            $response->throw();
+        }
+        return $pool;
     }
 
     private function createCompleteMatches(array $matches, string $puuid): Account
@@ -248,6 +262,7 @@ class AccountQuery extends Query
         ));
         if (!$account || !$account->refreshed_at || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
             $account_response = $this->fetchAccount($args['name'], $args['tag']);
+
             $puuid = $account_response['puuid'];
 
             Log::debug($account_response);

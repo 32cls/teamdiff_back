@@ -24,7 +24,7 @@ class ReviewInput extends InputType
                 'name' => 'rating',
                 'type' => Type::nonNull(Type::float()),
                 'description' => 'The rating of the review',
-                'rules' => ['required', 'min:0', 'max:5'],
+                'rules' => ['required', 'numeric', 'min:0', 'max:5'],
             ],
             'match_id' => [
                 'name' => 'match_id',
