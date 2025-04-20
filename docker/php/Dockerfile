@@ -1,5 +1,7 @@
 FROM php:8.4-fpm
 
+RUN curl -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && chmod +x /wait-for
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -21,7 +23,8 @@ COPY . .
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh wait-for-it.sh
-RUN chmod -R +w ./storage/logs ./bootstrap/cache
+RUN composer install
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh wait-for-it.sh && chmod -R +w ./storage/logs ./bootstrap/cache
 
 ENTRYPOINT ["docker-entrypoint.sh"]
