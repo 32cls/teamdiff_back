@@ -1,6 +1,6 @@
 FROM php:8.4-fpm
 
-RUN curl -O /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && chmod +x /wait-for
+RUN curl -o /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && chmod +x /wait-for
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
