@@ -24,8 +24,13 @@ COPY . .
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-RUN composer install
+RUN git config --global --add safe.directory . && composer install
 
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chmod -R +w ./storage ./bootstrap/cache
+# Fix permissions: make Laravel storage & cache writable for www-data
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+USER www-data
 
 ENTRYPOINT ["docker-entrypoint.sh"]
