@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['localhost:*', 'teamdiff-*.vercel.app'],
+    'allowed_origins' => ['http://localhost:*', 'https://teamdiff-*.vercel.app'],
 
     'allowed_origins_patterns' => [],
 

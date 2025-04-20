@@ -237,7 +237,7 @@ class AccountQuery extends Query
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
         $this->enforceRateLimit('AccountQuery', 20);
-        
+
         $fields = $getSelectFields();
         $select = $fields->getSelect();
         $with = $fields->getRelations();
