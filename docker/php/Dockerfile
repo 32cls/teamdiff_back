@@ -25,6 +25,6 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN composer install
 
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh wait-for-it.sh && chmod -R +w ./storage/logs ./bootstrap/cache
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chmod -R +w ./storage/logs ./bootstrap/cache
 
 ENTRYPOINT ["docker-entrypoint.sh"]
