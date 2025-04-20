@@ -22,5 +22,6 @@ COPY . .
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh wait-for-it.sh
+RUN chmod +w storage/logs
 
 ENTRYPOINT ["docker-entrypoint.sh"]
