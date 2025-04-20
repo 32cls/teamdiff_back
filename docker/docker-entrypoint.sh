@@ -6,6 +6,9 @@
 # Move to app directory
 cd /var/www/html
 
+# Install dependencies
+composer install
+
 # Run migrations
 php artisan migrate --force
 
