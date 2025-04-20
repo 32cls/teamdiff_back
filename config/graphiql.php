@@ -31,7 +31,7 @@ return [
             |
             */
 
-            'endpoint' => 'https://teamdiff.32cls.com/graphql',
+            'endpoint' => '/graphql',
 
             /*
             |--------------------------------------------------------------------------
