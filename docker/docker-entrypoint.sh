@@ -9,8 +9,6 @@ cd /var/www/html
 # Install dependencies
 composer install
 
-chmod +w ./storage/logs ./bootstrap/cache
-
 # Run migrations
 php artisan migrate --force
 
