@@ -19,4 +19,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
-CMD php artisan migrate --force && php-fpm
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh wait-for-it.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
