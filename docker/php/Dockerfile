@@ -4,6 +4,7 @@ FROM php:8.4-fpm
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    netcat-openbsd \
     libpq-dev \
     libzip-dev \
     unzip \
@@ -12,9 +13,24 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     && docker-php-ext-install pdo pdo_pgsql mbstring zip gd
 
+RUN curl -o /wait-for https://raw.githubusercontent.com/eficode/wait-for/v2.2.4/wait-for && chmod +x /wait-for
+
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-CMD ["php-fpm"]
+COPY . .
+
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN git config --global --add safe.directory . && composer install
+
+# Fix permissions: make Laravel storage & cache writable for www-data
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+USER www-data
+
+ENTRYPOINT ["docker-entrypoint.sh"]

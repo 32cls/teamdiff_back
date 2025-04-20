@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Scout\Builder;
 use Laravel\Scout\Searchable;
 
 /**
@@ -37,7 +38,8 @@ class Account extends Model
 
     public $timestamps = false;
 
-    public function summoner(): HasOne{
+    public function summoner(): HasOne
+    {
         return $this->hasOne(Summoner::class, 'account_id');
     }
 
@@ -59,8 +61,14 @@ class Account extends Model
     {
        return [
            'name' => $this->name,
-           'tag' => $this->tag
+           'tag' => $this->tag,
+           'summoner_icon' => $this->summoner->icon ?? null
        ];
+    }
+
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('summoner');
     }
 }
 
