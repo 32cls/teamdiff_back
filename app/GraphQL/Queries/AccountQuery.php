@@ -9,6 +9,7 @@ use App\Models\Participant;
 use App\Models\Summoner;
 use Carbon\Carbon;
 use Closure;
+use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -246,7 +247,7 @@ class AccountQuery extends Query
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {

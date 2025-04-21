@@ -32,6 +32,19 @@ class SummonerType extends GraphQLType
             'participants' => [
                 'type' => Type::listOf(GraphQL::type('Participant')),
                 'description' => 'History of participation of the summoner',
+                'args' => [
+                    'order' => [
+                        'type' => GraphQL::type('OrderEnum'),
+                    ],
+                ],
+                'query' => function (array $args, $query, $ctx): void {
+                    if (isset($args['order'])) {
+                        $query
+                            ->join('lolmatches', 'participants.match_id', '=', 'lolmatches.id')
+                            ->orderBy('lolmatches.game_creation', $args['order'])
+                            ->select('participants.*'); // Important to avoid messing with Eloquent hydration
+                    }
+                },
             ],
             'reviewSummary' => [
                 'type' => GraphQL::type('ReviewSummary'),

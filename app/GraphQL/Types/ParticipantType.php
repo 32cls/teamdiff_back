@@ -63,7 +63,7 @@ class ParticipantType extends GraphQLType
             ],
             'lolmatch' => [
                 'type' => Type::nonNull(GraphQL::type('LolMatch')),
-                'description' => 'Related match linked to player participation',
+                'description' => 'Related match linked to player participation'
             ]
         ];
     }
