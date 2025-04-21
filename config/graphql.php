@@ -3,6 +3,7 @@
 declare(strict_types = 1);
 
 use App\GraphQL\Enums\OrderEnum;
+use App\GraphQL\Enums\RegionEnum;
 use App\GraphQL\Inputs\ReviewInput;
 use App\GraphQL\Mutations\CreateReviewMutation;
 use App\GraphQL\Mutations\DeleteReviewMutation;
@@ -105,6 +106,7 @@ return [
                 ReviewSummaryType::class,
                 AverageRatingPerChampionType::class,
                 OrderEnum::class,
+                RegionEnum::class
             ],
 
             // Laravel HTTP middleware

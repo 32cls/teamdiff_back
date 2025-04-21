@@ -46,15 +46,20 @@ class AccountQuery extends Query
     {
         return [
             'name' => [
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The account name',
                 'rules' => ['required', 'min:3', 'max:16'],
             ],
             'tag' => [
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The account tag',
                 'rules' => ['required', 'min:3', 'max:5'],
             ],
+            'region' => [
+                'type' => Type::nonNull(GraphQL::type('RegionEnum')),
+                'description' => 'The account region',
+                'rules' => ['required'],
+            ]
         ];
     }
 
@@ -65,10 +70,9 @@ class AccountQuery extends Query
     {
         try {
              return $this->client->withUrlParameters([
-                'region' => 'europe',
                 'name' => $name,
                 'tag' => $tag
-            ])->get('https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')
+            ])->get('https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')
                 ->throw()
                 ->json();
         } catch (ConnectionException | RequestException $e) {
@@ -79,11 +83,11 @@ class AccountQuery extends Query
     /**
      * @throws Error
      */
-    private function fetchSummoner(string $puuid)
+    private function fetchSummoner(string $puuid, string $region)
     {
         try {
             return $this->client->withUrlParameters([
-                'region' => 'euw1',
+                'region' => $region,
                 'puuid' => $puuid
             ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')
                 ->throw()
@@ -96,11 +100,11 @@ class AccountQuery extends Query
     /**
      * @throws Error
      */
-    private function fetchMatchesId(string $puuid)
+    private function fetchMatchesId(string $puuid, string $region)
     {
         try {
             return $this->client->withUrlParameters([
-                'region' => 'europe',
+                'region' => $this->continent($region),
                 'puuid' => $puuid,
             ])->withQueryParameters([
                 'queue' => config("riot.queue"),
@@ -113,13 +117,15 @@ class AccountQuery extends Query
         }
     }
 
-    private function fetchMatches(array $matchids): array
+    private function fetchMatches(array $matchids, string $region): array
     {
         $found = LoLMatch::whereIn('id', $matchids)->get();
         $missing_matches = collect($matchids)->diff($found)->toArray();
         $pool = Http::pool(fn (Pool $pool) => array_map(
-                fn($match) => $pool->withHeaders(['X-Riot-Token' => config('riot.apikey')])
-                    ->acceptJson()->get("https://europe.api.riotgames.com/lol/match/v5/matches/$match"),
+                fn($match) => $pool
+                                ->withHeaders(['X-Riot-Token' => config('riot.apikey')])
+                                ->acceptJson()
+                                ->get("https://{$this->continent($region)}.api.riotgames.com/lol/match/v5/matches/{$match}"),
                 $missing_matches)
         );
         foreach ($pool as $response) {
@@ -128,7 +134,7 @@ class AccountQuery extends Query
         return $pool;
     }
 
-    private function createCompleteMatches(array $matches, string $puuid): Account
+    private function createCompleteMatches(array $matches, string $puuid, string $region): Account
     {
         $return_account = null;
 
@@ -164,13 +170,14 @@ class AccountQuery extends Query
                 'name' => optional($participants->firstWhere('puuid', $map_puuid))['riotIdGameName'],
                 'tag' => optional($participants->firstWhere('puuid', $map_puuid))['riotIdTagline'],
                 'refreshed_at' => $map_puuid == $puuid ? now() : null,
+                'region' => $region
             ])
             ->unique('puuid')  // Prevent duplicate puuids
             ->values()
             ->all();
 
         if (!empty($newAccounts)) {
-            Account::upsert($newAccounts, ['puuid'], ['name', 'tag', 'refreshed_at']);
+            Account::upsert($newAccounts, ['puuid'], ['name', 'tag', 'refreshed_at', 'region']);
         }
 
         $accounts = Account::whereIn('puuid', $puuids)->get()->keyBy('puuid');
@@ -246,6 +253,17 @@ class AccountQuery extends Query
         return $return_account;
     }
 
+    private function continent(string $region): string
+    {
+        return match ($region) {
+            'NA1', 'BR1', 'LA1', 'LA2' => 'americas',
+            'KR', 'JP1' => 'asia',
+            'EUN1', 'EUW1', 'ME1', 'TR1', 'RU' => 'europe',
+            'OC1', 'SG2', 'TW2', 'VN2' => 'sea',
+            default => '',
+        };
+    }
+
     /**
      * @throws Exception
      */
@@ -257,8 +275,10 @@ class AccountQuery extends Query
         $select = $fields->getSelect();
         $with = $fields->getRelations();
 
+        $region = $args['region'];
+
         $account = Account::select($select)->with($with)->firstWhere((
-            ['name' => $args['name'], 'tag' => $args['tag']]
+            ['name' => $args['name'], 'tag' => $args['tag'], 'region' => $region]
         ));
         if (!$account || !$account->refreshed_at || now()->diffInMinutes($account->refreshed_at) > config("riot.refreshlimit")) {
             $account_response = $this->fetchAccount($args['name'], $args['tag']);
@@ -267,18 +287,18 @@ class AccountQuery extends Query
 
             Log::debug($account_response);
 
-            $summoner_response = $this->fetchSummoner($puuid);
+            $summoner_response = $this->fetchSummoner($puuid, $region);
 
             Log::debug($summoner_response);
 
-            $matchids_response = $this->fetchMatchesId($puuid);
+            $matchids_response = $this->fetchMatchesId($puuid, $region);
 
             Log::debug($matchids_response);
 
-            $matches_response = $this->fetchMatches($matchids_response);
+            $matches_response = $this->fetchMatches($matchids_response, $region);
             Log::debug(implode($matches_response));
 
-            $account = $this->createCompleteMatches($matches_response, $puuid);
+            $account = $this->createCompleteMatches($matches_response, $puuid, $region);
             $account = Account::select($select)->with($with)->find($account->puuid);
         }
         return $account;

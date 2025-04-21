@@ -48,6 +48,7 @@ class Account extends Model
         'name',
         'tag',
         'refreshed_at',
+        'region'
     ];
 
     protected function casts(): array
@@ -62,7 +63,8 @@ class Account extends Model
        return [
            'name' => $this->name,
            'tag' => $this->tag,
-           'summoner_icon' => $this->summoner->icon ?? null
+           'summoner_icon' => $this->summoner->icon ?? null,
+           'region' => $this->region
        ];
     }
 

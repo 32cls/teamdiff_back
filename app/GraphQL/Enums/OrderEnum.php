@@ -8,7 +8,7 @@ class OrderEnum extends EnumType
 {
     protected $attributes = [
         'name' => 'OrderEnum',
-        'description' => 'The possible values for orders',
+        'description' => 'The possible values for ordering matches by game creation date',
         'values' => [
             'ASCENDING' => 'asc',
             'DESCENDING' => 'desc',
