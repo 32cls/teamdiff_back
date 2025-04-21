@@ -37,6 +37,10 @@ class ParticipantType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Number of deaths made by the summoner in the match',
             ],
+            'team_position' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'Role of the summoner',
+            ],
             'assists' => [
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Number of assists made by the summoner in the match',

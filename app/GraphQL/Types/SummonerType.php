@@ -33,6 +33,47 @@ class SummonerType extends GraphQLType
                 'type' => Type::listOf(GraphQL::type('Participant')),
                 'description' => 'History of participation of the summoner',
             ],
+            'reviewSummary' => [
+                'type' => GraphQL::type('ReviewSummary'),
+                'description' => 'Summary of reviews for this summoner',
+                'selectable' => false,
+                'resolve' => function ($root) {
+                    $reviews = $root->participants
+                        ->flatMap(function ($participant) {
+                            return $participant->receivedReviews;
+                        });
+
+                    if ($reviews->isEmpty()) {
+                        return [
+                            'averageRating' => null,
+                            'averageRatingPerChampion' => [],
+                        ];
+                    }
+
+                    $average = round($reviews->avg('rating'), 2);
+
+                    $perChampion = $root->participants
+                        ->groupBy('champion_id')
+                        ->map(function ($group, $championId) {
+                            $allReviews = $group
+                                ->flatMap(function ($participant) {
+                                    return $participant->receivedReviews;
+                                });
+
+                            return [
+                                'championId' => $championId,
+                                'averageRating' => $allReviews->isNotEmpty() ? round($allReviews->avg('rating'), 2) : null,
+                            ];
+                        })
+                        ->values();
+
+                    return [
+                        'averageRating' => $average,
+                        'averageRatingPerChampion' => $perChampion,
+                    ];
+                },
+            ],
         ];
     }
+
 }

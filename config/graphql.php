@@ -7,8 +7,10 @@ use App\GraphQL\Mutations\CreateReviewMutation;
 use App\GraphQL\Mutations\DeleteReviewMutation;
 use App\GraphQL\Queries\AccountQuery;
 use App\GraphQL\Types\AccountType;
+use App\GraphQL\Types\AverageRatingPerChampionType;
 use App\GraphQL\Types\LoLMatchType;
 use App\GraphQL\Types\ParticipantType;
+use App\GraphQL\Types\ReviewSummaryType;
 use App\GraphQL\Types\ReviewType;
 use App\GraphQL\Types\SummonerType;
 
@@ -99,6 +101,8 @@ return [
                 ParticipantType::class,
                 ReviewType::class,
                 ReviewInput::class,
+                ReviewSummaryType::class,
+                AverageRatingPerChampionType::class
             ],
 
             // Laravel HTTP middleware

@@ -52,6 +52,7 @@ class CreateReviewMutation extends Mutation
 
         $hardcoded_reviewer_id = "lTP48_kb1TjEwD00tYyPKMMM7RuK6gnIVo2M3dfxSL9ENYTG";
         $input = $args['input'];
+
         if ($hardcoded_reviewer_id == $input['reviewee_id'])
         {
             throw new Error('Bad request, summoner can\'t review their own performance');

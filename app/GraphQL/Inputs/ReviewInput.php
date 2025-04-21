@@ -35,7 +35,7 @@ class ReviewInput extends InputType
             'reviewee_id' => [
                 'name' => 'reviewee_id',
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The identifier of the reviewee',
+                'description' => 'The identifier of the reviewee (summoner id)',
                 'rules' => ['required'],
             ]
         ];
