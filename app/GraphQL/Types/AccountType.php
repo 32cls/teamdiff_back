@@ -25,6 +25,10 @@ class AccountType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Name of the account of the player',
             ],
+            'region' => [
+                'type' => Type::nonNull(GraphQL::type('RegionEnum')),
+                'description' => 'Region of the account of the player',
+            ],
             'tag' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Tag (usually preceded by \'#\') of the account of the player',
