@@ -76,6 +76,7 @@ class CreateReviewMutation extends Mutation
             $review = Review::make([
                 'content' => $input['content'],
                 'rating' => $input['rating'],
+                'is_ally' => $reviewer->team_id == $reviewee->team_id
             ]);
             $review->reviewer()->associate($reviewer);
             $review->reviewee()->associate($reviewee);

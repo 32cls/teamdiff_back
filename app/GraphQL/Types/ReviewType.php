@@ -47,6 +47,10 @@ class ReviewType extends GraphQLType
                 'type' => GraphQL::type('Participant'),
                 'description' => 'Reviewee (recipient) of the review'
             ],
+            'is_ally' => [
+                'type' => Type::nonNull(Type::boolean()),
+                'description' => 'Is the summoner reviewed an ally of the reviewer?'
+            ]
         ];
     }
 }

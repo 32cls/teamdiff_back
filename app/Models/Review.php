@@ -45,6 +45,7 @@ class Review extends Model
         'content',
         'rating',
         'reviewee_id',
+        'is_ally'
     ];
 
     public function reviewer(): BelongsTo

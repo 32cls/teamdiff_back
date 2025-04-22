@@ -22,6 +22,7 @@ class ReviewFactory extends Factory
             'rating' => fake()->randomFloat(1,0,5),
             'reviewee_id' => Participant::factory(),
             'reviewer_id' => Participant::factory(),
+            'is_ally' => fake()->boolean(),
         ];
     }
 }

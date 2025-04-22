@@ -16,11 +16,11 @@ class AverageRatingPerChampionType extends GraphQLType
     {
         return [
             'championId' => [
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'Champion ID',
             ],
             'averageRating' => [
-                'type' => Type::float(),
+                'type' => Type::nonNull(Type::float()),
                 'description' => 'Average rating for this champion',
             ],
         ];
