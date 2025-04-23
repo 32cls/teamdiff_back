@@ -29,6 +29,10 @@ class SummonerType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Experience level of the summoner',
             ],
+            'account' => [
+              'type' => Type::nonNull(GraphQL::type('Account')),
+              'description' => 'The account associated with the summoner',
+            ],
             'participants' => [
                 'type' => Type::listOf(GraphQL::type('Participant')),
                 'description' => 'History of participation of the summoner',

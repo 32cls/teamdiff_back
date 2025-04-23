@@ -17,9 +17,9 @@ class ParticipantType extends GraphQLType
     public function fields(): array
     {
         return [
-            'summoner_id' => [
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'Unique identifier of the summoner"',
+            'summoner' => [
+                'type' => Type::nonNull(GraphQL::type('Summoner')),
+                'description' => 'The summoner associated with the participant',
             ],
             'champion_id' => [
                 'type' => Type::nonNull(Type::int()),
