@@ -69,7 +69,12 @@ class CreateReviewMutation extends Mutation
             if(!$match || !$reviewer || !$reviewee){
                 throw new Error("Bad request");
             }
-            if (Review::where(['reviewer_id' => $reviewer->id, 'reviewee_id' => $reviewee->id, 'match_id' => $match->id])->exists())
+            $exists = Review::where('reviews.reviewer_id', $reviewer->id)
+                ->where('reviews.reviewee_id', $reviewee->id)
+                ->join('participants', 'participants.summoner_id', '=', 'reviews.reviewee_id')
+                ->where('participants.match_id', $match->id)
+                ->exists();
+            if($exists)
             {
                 throw new Error("A review already exists for this match with provided reviewer/reviewee tuple");
             }
