@@ -24,7 +24,7 @@ class Summoner extends Model
 
     public function account(): BelongsTo
     {
-        return $this->belongsTo(Account::class, 'accountId');
+        return $this->belongsTo(Account::class, 'accountPuuid');
     }
 
     public function participations(): HasMany

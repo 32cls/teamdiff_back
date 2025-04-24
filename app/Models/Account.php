@@ -22,7 +22,7 @@ class Account extends Model
 
     public function summoner(): HasOne
     {
-        return $this->hasOne(Summoner::class, 'accountId');
+        return $this->hasOne(Summoner::class, 'accountPuuid');
     }
 
     protected $fillable = [

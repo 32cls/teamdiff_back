@@ -184,7 +184,7 @@ class AccountQuery extends Query
             ->filter(fn($p) => !isset($existingSummoners[$p['summonerId']]))
             ->map(fn($p) => [
                 'id' => $p['summonerId'],
-                'accountId' => $p['puuid'],
+                'accountPuuid' => $p['puuid'],
                 'icon' => $p['profileIcon'],
                 'level' => $p['summonerLevel'],
             ])
@@ -193,9 +193,9 @@ class AccountQuery extends Query
             ->all();
 
         if (!empty($newSummoners)) {
-            Summoner::upsert($newSummoners, ['id'], ['accountId', 'icon', 'level']);
-            $accountIds = collect($newSummoners)->pluck('accountId')->unique();
-            Account::whereIn('puuid', $accountIds)->searchable();
+            Summoner::upsert($newSummoners, ['id'], ['accountPuuid', 'icon', 'level']);
+            $accountPuuids = collect($newSummoners)->pluck('accountPuuid')->unique();
+            Account::whereIn('puuid', $accountPuuids)->searchable();
         }
     }
 
