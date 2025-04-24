@@ -30,7 +30,7 @@ class AccountQuery extends Query
     public function __construct()
     {
         $this->client = Http::acceptJson()->withHeaders([
-            'X-Riot-Token' => config('riot.apikey')
+            'X-Riot-Token' => config('riot.apiKey')
         ]);
     }
 
@@ -110,7 +110,7 @@ class AccountQuery extends Query
                 'puuid' => $puuid,
             ])->withQueryParameters([
                 'queue' => config("riot.queue"),
-                'count' => config("riot.matchesbatch"),
+                'count' => config("riot.matchesBatch"),
             ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')
                 ->throw()
                 ->json();
@@ -125,7 +125,7 @@ class AccountQuery extends Query
         $missingMatches = collect($matchids)->diff($found)->toArray();
         $pool = Http::pool(fn (Pool $pool) => array_map(
                 fn($match) => $pool
-                            ->withHeaders(['X-Riot-Token' => config('riot.apikey')])
+                            ->withHeaders(['X-Riot-Token' => config('riot.apiKey')])
                             ->acceptJson()
                             ->get("https://{$this->continent($region)}.api.riotgames.com/lol/match/v5/matches/$match"),
                 $missingMatches)
@@ -299,7 +299,7 @@ class AccountQuery extends Query
         $account = Account::select($select)->with($with)->firstWhere((
             ['name' => $args['name'], 'tag' => $args['tag'], 'region' => $region]
         ));
-        if (!$account || !$account->refreshedAt || now()->diffInMinutes($account->refreshedAt) > config("riot.refreshlimit")) {
+        if (!$account || !$account->refreshedAt || now()->diffInMinutes($account->refreshedAt) > config("riot.refreshLimit")) {
             $accountResponse = $this->fetchAccount($args['name'], $args['tag']);
 
             $puuid = $accountResponse['puuid'];
