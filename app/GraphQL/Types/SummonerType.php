@@ -70,16 +70,14 @@ class SummonerType extends GraphQLType
                     $average = round($reviews->avg('rating'), 2);
 
                     $perChampion = $root->participants
+                        ->filter(fn($participant) => $participant->receivedReviews->isNotEmpty())
                         ->groupBy('champion_id')
                         ->map(function ($group, $championId) {
-                            $allReviews = $group
-                                ->flatMap(function ($participant) {
-                                    return $participant->receivedReviews;
-                                });
+                            $allReviews = $group->flatMap(fn($participant) => $participant->receivedReviews);
 
                             return [
                                 'championId' => $championId,
-                                'averageRating' => $allReviews->isNotEmpty() ? round($allReviews->avg('rating'), 2) : null,
+                                'averageRating' => round($allReviews->avg('rating'), 2),
                             ];
                         })
                         ->values();
