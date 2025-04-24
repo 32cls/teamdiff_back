@@ -85,10 +85,10 @@ class SummonerType extends GraphQLType
                             ];
                         });
 
-                    if ($args['bestRatingOrder'] === 'asc') {
-                        $perChampion = $perChampion->sortBy('rating');
-                    } else {
+                    if (!isset($args['bestRatingOrder']) || $args['bestRatingOrder'] === 'desc') {
                         $perChampion = $perChampion->sortByDesc('rating');
+                    } else {
+                        $perChampion = $perChampion->sort('rating');
                     }
 
                     $perChampion = $perChampion->values();
