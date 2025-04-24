@@ -7,7 +7,6 @@ use App\Models\Review;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
-use Ramsey\Uuid\Guid\Guid;
 use Rebing\GraphQL\Support\Mutation;
 use GraphQL\Type\Definition\Type;
 

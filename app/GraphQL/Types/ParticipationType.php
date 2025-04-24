@@ -42,7 +42,7 @@ class ParticipationType extends GraphQLType
                 'description' => 'Number of deaths made by the summoner in the match',
             ],
             'role' => [
-                'type' => Type::nonNull(Type::string()),
+                'type' => Type::nonNull(GraphQL::type('RoleEnum')),
                 'description' => 'Role of the summoner',
             ],
             'assists' => [
