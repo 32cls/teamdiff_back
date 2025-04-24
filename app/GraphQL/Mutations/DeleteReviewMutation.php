@@ -17,7 +17,7 @@ class DeleteReviewMutation extends Mutation
     use RateLimited;
 
     protected $attributes = [
-        'name' => 'delete_review',
+        'name' => 'deleteReview',
     ];
 
     public function type(): Type

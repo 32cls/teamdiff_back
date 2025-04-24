@@ -21,7 +21,7 @@ class CreateReviewMutation extends Mutation
     use RateLimited;
 
     protected $attributes = [
-        'name' => 'create_review',
+        'name' => 'createReview',
     ];
 
     public function type(): Type
