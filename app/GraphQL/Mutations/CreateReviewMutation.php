@@ -71,7 +71,7 @@ class CreateReviewMutation extends Mutation
             }
             $exists = Review::where('reviews.reviewer_id', $reviewer->id)
                 ->where('reviews.reviewee_id', $reviewee->id)
-                ->join('participants', 'participants.summoner_id', '=', 'reviews.reviewee_id')
+                ->join('participants', 'participants.id', '=', 'reviews.reviewee_id')
                 ->where('participants.match_id', $match->id)
                 ->exists();
             if($exists)
