@@ -16,9 +16,13 @@ class ReviewSummaryType extends GraphQLType
     public function fields(): array
     {
         return [
-            'averageRating' => [
+            'totalRatingCount' => [
+                'type' => Type::int(),
+                'description' => 'The total number of reviews for this summoner',
+            ],
+            'totalAverageRating' => [
                 'type' => Type::float(),
-                'description' => 'Average rating for this summoner',
+                'description' => 'Total average rating for this summoner',
             ],
             'averageRatingPerChampion' => [
                 'type' => Type::listOf(GraphQL::type('AverageRatingPerChampion')),

@@ -2,16 +2,16 @@
 
 namespace App\GraphQL\Types;
 
-use App\Models\Participant;
+use App\Models\Participation;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Type as GraphQLType;
 use Rebing\GraphQL\Support\Facades\GraphQL;
-class ParticipantType extends GraphQLType
+class ParticipationType extends GraphQLType
 {
     protected $attributes = [
-        'name' => 'Participant',
+        'name' => 'Participation',
         'description' => 'The summoner that played in the match',
-        'model' => Participant::class,
+        'model' => Participation::class,
     ];
 
     public function fields(): array
@@ -19,13 +19,13 @@ class ParticipantType extends GraphQLType
         return [
             'summoner' => [
                 'type' => Type::nonNull(GraphQL::type('Summoner')),
-                'description' => 'The summoner associated with the participant',
+                'description' => 'The summoner associated with the participation',
             ],
-            'champion_id' => [
-                'type' => Type::nonNull(Type::int()),
+            'championId' => [
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'Identifier of the champion played by the summoner"',
             ],
-            'team_id' => [
+            'teamId' => [
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Team ID of the summoner',
             ],
@@ -41,7 +41,7 @@ class ParticipantType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Number of deaths made by the summoner in the match',
             ],
-            'team_position' => [
+            'role' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Role of the summoner',
             ],
@@ -53,15 +53,15 @@ class ParticipantType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Level of the champion played by the summoner',
             ],
-            'wrotereviews' => [
+            'writtenReviews' => [
                 'type' => Type::listOf(GraphQL::type('Review')),
                 'description' => 'List of reviews written by the summoner in the match',
             ],
-            'receivedreviews' => [
+            'receivedReviews' => [
                 'type' => Type::listOf(GraphQL::type('Review')),
                 'description' => 'List of reviews received by the summoner in the match',
             ],
-            'lolmatch' => [
+            'lolMatch' => [
                 'type' => Type::nonNull(GraphQL::type('LolMatch')),
                 'description' => 'Related match linked to player participation'
             ]

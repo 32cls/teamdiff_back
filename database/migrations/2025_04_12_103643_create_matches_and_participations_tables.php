@@ -14,23 +14,23 @@ return new class extends Migration
         Schema::create('lolmatches', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->integer("duration")->nullable(false);
-            $table->timestamp("game_creation")->nullable(false);
+            $table->timestamp("gameCreation")->nullable(false);
         });
-        Schema::create('participants', function (Blueprint $table) {
+        Schema::create('participations', function (Blueprint $table) {
             $table->id();
-            $table->integer("champion_id")->nullable(false);
-            $table->integer("team_id")->nullable(false);
-            $table->string("team_position")->nullable(false);
+            $table->string("championId")->nullable(false);
+            $table->integer("teamId")->nullable(false);
+            $table->string("role")->nullable(false);
             $table->boolean("win")->nullable(false);
             $table->integer("kills")->nullable(false);
             $table->integer("deaths")->nullable(false);
             $table->integer("assists")->nullable(false);
             $table->integer("level")->nullable(false);
-            $table->string('match_id')->nullable(false);
-            $table->string('summoner_id')->nullable(false);
-            $table->foreign("summoner_id")->references('id')->on('summoners')->onDelete('cascade');
-            $table->foreign("match_id")->references('id')->on('lolmatches')->onDelete('cascade');
-            $table->unique(['match_id', 'summoner_id']);
+            $table->string('matchId')->nullable(false);
+            $table->string('summonerId')->nullable(false);
+            $table->foreign("summonerId")->references('id')->on('summoners')->onDelete('cascade');
+            $table->foreign("matchId")->references('id')->on('lolmatches')->onDelete('cascade');
+            $table->unique(['matchId', 'summonerId']);
         });
     }
 
@@ -39,7 +39,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('participants');
+        Schema::dropIfExists('participations');
         Schema::dropIfExists('lolmatches');
     }
 };

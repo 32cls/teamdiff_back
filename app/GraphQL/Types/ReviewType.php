@@ -12,7 +12,7 @@ class ReviewType extends GraphQLType
 {
     protected $attributes = [
         'name' => 'Review',
-        'description' => 'A review for a game',
+        'description' => 'A review for a match',
         'model' => Review::class,
     ];
 
@@ -20,8 +20,8 @@ class ReviewType extends GraphQLType
     {
         return [
             'id' => [
-                'type' => Type::nonNull(Type::id()),
-                'description' => 'The identifier of the review',
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'The unique identifier of the review',
             ],
             'content' => [
                 'type' => Type::nonNull(Type::string()),
@@ -31,25 +31,25 @@ class ReviewType extends GraphQLType
                 'type' => Type::nonNull(Type::float()),
                 'description' => 'Rating of the player\'s performance'
             ],
-            'created_at' => [
+            'createdAt' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Creation date of the review'
             ],
-            'updated_at' => [
+            'updatedAt' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Modification date of the review'
             ],
             'reviewer' => [
-                'type' => GraphQL::type('Participant'),
+                'type' => GraphQL::type('Participation'),
                 'description' => 'Reviewer (author) of the review',
             ],
-            'reviewee' => [
-                'type' => GraphQL::type('Participant'),
-                'description' => 'Reviewee (recipient) of the review'
+            'receiver' => [
+                'type' => GraphQL::type('Participation'),
+                'description' => 'Receiver of the review'
             ],
-            'is_ally' => [
+            'isAlly' => [
                 'type' => Type::nonNull(Type::boolean()),
-                'description' => 'Is the summoner reviewed an ally of the reviewer?'
+                'description' => 'Is the summoner reviewed an ally of the reviewer'
             ]
         ];
     }

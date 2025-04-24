@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\Participant;
+use App\Models\Participation;
+use App\Models\Review;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Review>
+ * @extends Factory<Review>
  */
 class ReviewFactory extends Factory
 {
@@ -18,11 +19,12 @@ class ReviewFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->uuid(),
             'content' => fake()->paragraph(),
             'rating' => fake()->randomFloat(1,0,5),
-            'reviewee_id' => Participant::factory(),
-            'reviewer_id' => Participant::factory(),
-            'is_ally' => fake()->boolean(),
+            'receiverId' => Participation::factory(),
+            'reviewerId' => Participation::factory(),
+            'isAlly' => fake()->boolean(),
         ];
     }
 }

@@ -33,20 +33,20 @@ class SummonerType extends GraphQLType
               'type' => Type::nonNull(GraphQL::type('Account')),
               'description' => 'The account associated with the summoner',
             ],
-            'participants' => [
-                'type' => Type::listOf(GraphQL::type('Participant')),
-                'description' => 'History of participation of the summoner',
+            'participations' => [
+                'type' => Type::listOf(GraphQL::type('Participation')),
+                'description' => 'History of participations of the summoner',
                 'args' => [
-                    'order' => [
+                    'gameCreationDateOrder' => [
                         'type' => GraphQL::type('OrderEnum'),
                     ],
                 ],
-                'query' => function (array $args, $query, $ctx): void {
+                'query' => function (array $args, $query): void {
                     if (isset($args['order'])) {
                         $query
-                            ->join('lolmatches', 'participants.match_id', '=', 'lolmatches.id')
-                            ->orderBy('lolmatches.game_creation', $args['order'])
-                            ->select('participants.*'); // Important to avoid messing with Eloquent hydration
+                            ->join('lolmatches', 'participations.matchId', '=', 'lolmatches.id')
+                            ->orderBy('lolmatches.gameCreation', $args['gameCreationDateOrder'])
+                            ->select('participations.*'); // Important to avoid messing with Eloquent hydration
                     }
                 },
             ],
@@ -54,36 +54,48 @@ class SummonerType extends GraphQLType
                 'type' => GraphQL::type('ReviewSummary'),
                 'description' => 'Summary of reviews for this summoner',
                 'selectable' => false,
-                'resolve' => function ($root) {
-                    $reviews = $root->participants
-                        ->flatMap(function ($participant) {
-                            return $participant->receivedReviews;
+                'args' => [
+                    'bestRatingOrder' => [
+                        'type' => GraphQL::type('OrderEnum'),
+                    ],
+                ],
+                'resolve' => function ($root, array $args) {
+                    $reviews = $root->participations
+                        ->flatMap(function ($participation) {
+                            return $participation->receivedReviews;
                         });
 
                     if ($reviews->isEmpty()) {
-                        return [
-                            'averageRating' => null,
-                            'averageRatingPerChampion' => [],
-                        ];
+                        return null;
                     }
 
                     $average = round($reviews->avg('rating'), 2);
+                    $count = $reviews->count();
 
-                    $perChampion = $root->participants
-                        ->filter(fn($participant) => $participant->receivedReviews->isNotEmpty())
-                        ->groupBy('champion_id')
+                    $perChampion = $root->participations
+                        ->filter(fn($participation) => $participation->receivedReviews->isNotEmpty())
+                        ->groupBy('championId')
                         ->map(function ($group, $championId) {
-                            $allReviews = $group->flatMap(fn($participant) => $participant->receivedReviews);
+                            $allReviews = $group->flatMap(fn($participation) => $participation->receivedReviews);
 
                             return [
+                                'count' => $allReviews->count(),
                                 'championId' => $championId,
-                                'averageRating' => round($allReviews->avg('rating'), 2),
+                                'rating' => round($allReviews->avg('rating'), 2),
                             ];
-                        })
-                        ->values();
+                        });
+
+                    if ($args['bestRatingOrder'] === 'asc') {
+                        $perChampion = $perChampion->sortBy('rating');
+                    } else {
+                        $perChampion = $perChampion->sortByDesc('rating');
+                    }
+
+                    $perChampion = $perChampion->values();
 
                     return [
-                        'averageRating' => $average,
+                        'totalRatingCount' => $count,
+                        'totalAverageRating' => $average,
                         'averageRatingPerChampion' => $perChampion,
                     ];
                 },

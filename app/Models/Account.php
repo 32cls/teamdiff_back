@@ -8,24 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Searchable;
 
-/**
- *
- *
- * @property string $puuid
- * @property string $name
- * @property string $tag
- * @property \Illuminate\Support\Carbon $refreshed_at
- * @property-read \App\Models\Summoner|null $summoner
- * @method static \Database\Factories\AccountFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account wherePuuid($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account whereRefreshedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Account whereTag($value)
- * @mixin \Eloquent
- */
 class Account extends Model
 {
 
@@ -40,21 +22,21 @@ class Account extends Model
 
     public function summoner(): HasOne
     {
-        return $this->hasOne(Summoner::class, 'account_id');
+        return $this->hasOne(Summoner::class, 'accountId');
     }
 
     protected $fillable = [
         'puuid',
         'name',
         'tag',
-        'refreshed_at',
+        'refreshedAt',
         'region'
     ];
 
     protected function casts(): array
     {
         return [
-            'refreshed_at' => 'datetime:Y-m-d H:i:s',
+            'refreshedAt' => 'datetime:Y-m-d H:i:s',
         ];
     }
 
@@ -63,7 +45,7 @@ class Account extends Model
        return [
            'name' => $this->name,
            'tag' => $this->tag,
-           'summoner_icon' => $this->summoner->icon ?? null,
+           'summonerIcon' => $this->summoner->icon ?? null,
            'region' => $this->region
        ];
     }

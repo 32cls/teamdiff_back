@@ -26,16 +26,16 @@ class ReviewInput extends InputType
                 'description' => 'The rating of the review',
                 'rules' => ['required', 'numeric', 'min:0', 'max:5'],
             ],
-            'match_id' => [
-                'name' => 'match_id',
+            'matchId' => [
+                'name' => 'matchId',
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The identifier of the match',
                 'rules' => ['required'],
             ],
-            'reviewee_id' => [
-                'name' => 'reviewee_id',
+            'receiverId' => [
+                'name' => 'receiverId',
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The identifier of the reviewee (summoner id)',
+                'description' => 'The identifier of the receiver of the review (summoner id)',
                 'rules' => ['required'],
             ]
         ];

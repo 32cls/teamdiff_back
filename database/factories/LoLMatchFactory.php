@@ -19,7 +19,7 @@ class LoLMatchFactory extends Factory
         return [
             'id' => fake()->unique()->text('10'),
             'duration' => fake()->numberBetween(0, 3600),
-            'game_creation' => fake()->dateTimeThisMonth('now')->format('Y-m-d H:i:s'),
+            'gameCreation' => fake()->dateTimeThisMonth('now')->format('Y-m-d H:i:s'),
         ];
     }
 }

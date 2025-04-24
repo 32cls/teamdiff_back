@@ -4,8 +4,10 @@ namespace App\GraphQL\Mutations;
 
 use App\GraphQL\Traits\RateLimited;
 use App\Models\Review;
+use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Ramsey\Uuid\Guid\Guid;
 use Rebing\GraphQL\Support\Mutation;
 use GraphQL\Type\Definition\Type;
 
@@ -27,7 +29,7 @@ class DeleteReviewMutation extends Mutation
     {
         return [
             "id" => [
-                'type' => Type::nonNull(Type::int()),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The id of the review to delete',
                 'rules' => ['required'],
             ]
@@ -37,7 +39,7 @@ class DeleteReviewMutation extends Mutation
     /**
      * @throws Error
      */
-    public function resolve($root, $args, $context, ResolveInfo $info)
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): bool
     {
         $this->enforceRateLimit('DeleteReviewMutation', 20, 10);
         $review = Review::find($args['id']);

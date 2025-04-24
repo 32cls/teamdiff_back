@@ -33,7 +33,7 @@ class AccountType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Tag (usually preceded by \'#\') of the account of the player',
             ],
-            'refreshed_at' => [
+            'refreshedAt' => [
                 'type' => Type::string(),
                 'description' => 'Last time at which the account was refreshed',
             ],

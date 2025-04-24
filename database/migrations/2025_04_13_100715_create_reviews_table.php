@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reviews', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->text('content')->nullable(false);
             $table->float('rating')->nullable(false);
-            $table->timestamps();
-            $table->foreignId('reviewer_id')->constrained('participants', 'id');
-            $table->foreignId('reviewee_id')->constrained('participants', 'id');
+            $table->timestamp('createdAt')->nullable();
+            $table->timestamp('updatedAt')->nullable();
+            $table->foreignId('reviewerId')->constrained('participations', 'id');
+            $table->foreignId('receiverId')->constrained('participations', 'id');
             $table->softDeletes();
         });
     }

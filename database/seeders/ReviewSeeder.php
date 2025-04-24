@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Participant;
+use App\Models\Participation;
 use App\Models\Review;
-use App\Models\Summoner;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
@@ -14,7 +13,7 @@ class ReviewSeeder extends Seeder
      */
     public function run(): void
     {
-        $random_participants = Participant::inRandomOrder()->take(10)->get();
-        Review::factory()->recycle($random_participants)->count(20)->create();
+        $randomparticipations = Participation::inRandomOrder()->take(10)->get();
+        Review::factory()->recycle($randomparticipations)->count(20)->create();
     }
 }

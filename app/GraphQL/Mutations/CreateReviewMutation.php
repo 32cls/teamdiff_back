@@ -4,16 +4,16 @@ namespace App\GraphQL\Mutations;
 
 use App\GraphQL\Traits\RateLimited;
 use App\Models\LoLMatch;
-use App\Models\Participant;
+use App\Models\Participation;
 use App\Models\Review;
-use App\Models\Summoner;
 use Closure;
+use Exception;
 use GraphQL\Error\Error;
 use GraphQL;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Log;
 use Rebing\GraphQL\Support\Mutation;
 use GraphQL\Type\Definition\Type;
+use Rebing\GraphQL\Support\SelectFields;
 
 class CreateReviewMutation extends Mutation
 {
@@ -39,8 +39,7 @@ class CreateReviewMutation extends Mutation
     }
 
     /**
-     * @throws Error
-     * @throws \Exception
+     * @throws Exception
      */
     public function resolve($root, $args, $context, ResolveInfo $info, Closure $getSelectFields)
     {
@@ -50,41 +49,41 @@ class CreateReviewMutation extends Mutation
         $select = $fields->getSelect();
         $with = $fields->getRelations();
 
-        $hardcoded_reviewer_id = "lTP48_kb1TjEwD00tYyPKMMM7RuK6gnIVo2M3dfxSL9ENYTG";
+        $hardcodedReviewerId = "lTP48_kb1TjEwD00tYyPKMMM7RuK6gnIVo2M3dfxSL9ENYTG";
         $input = $args['input'];
 
-        if ($hardcoded_reviewer_id == $input['reviewee_id'])
+        if ($hardcodedReviewerId == $input['receiverId'])
         {
             throw new Error('Bad request, summoner can\'t review their own performance');
         }
         else
         {
-            $match = LoLMatch::where('id', $input['match_id'])->first();
-            $reviewer = Participant::where('summoner_id', $hardcoded_reviewer_id)
-                ->where('match_id', $input['match_id'])
+            $match = LoLMatch::where('id', $input['matchId'])->first();
+            $reviewer = Participation::where('summonerId', $hardcodedReviewerId)
+                ->where('matchId', $input['matchId'])
                 ->first();
-            $reviewee = Participant::where('summoner_id', $input['reviewee_id'])
-                ->where('match_id', $input['match_id'])
+            $receiver = Participation::where('summonerId', $input['receiverId'])
+                ->where('matchId', $input['matchId'])
                 ->first();
-            if(!$match || !$reviewer || !$reviewee){
+            if(!$match || !$reviewer || !$receiver){
                 throw new Error("Bad request");
             }
-            $exists = Review::where('reviews.reviewer_id', $reviewer->id)
-                ->where('reviews.reviewee_id', $reviewee->id)
-                ->join('participants', 'participants.id', '=', 'reviews.reviewee_id')
-                ->where('participants.match_id', $match->id)
+            $exists = Review::where('reviews.reviewerId', $reviewer->id)
+                ->where('reviews.receiverId', $receiver->id)
+                ->join('participations', 'participations.id', '=', 'reviews.receiverId')
+                ->where('participations.matchId', $match->id)
                 ->exists();
             if($exists)
             {
-                throw new Error("A review already exists for this match with provided reviewer/reviewee tuple");
+                throw new Error("A review already exists for this match with provided reviewer/receiver tuple");
             }
             $review = Review::make([
                 'content' => $input['content'],
                 'rating' => $input['rating'],
-                'is_ally' => $reviewer->team_id == $reviewee->team_id
+                'isAlly' => $reviewer->teamId == $receiver->teamId
             ]);
             $review->reviewer()->associate($reviewer);
-            $review->reviewee()->associate($reviewee);
+            $review->receiver()->associate($receiver);
             $review->save();
             return Review::select($select)->with($with)->find($review->id);
         }

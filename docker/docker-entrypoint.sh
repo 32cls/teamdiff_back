@@ -8,6 +8,7 @@ cd /var/www/html
 
 # Run migrations
 php artisan migrate --force
-
+# Sync meilisearch index
+php artisan scout:sync-index-settings
 # Start PHP-FPM
 exec php-fpm

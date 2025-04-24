@@ -26,13 +26,13 @@ class LoLMatchType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'Duration of the match',
             ],
-            'game_creation' => [
+            'gameCreation' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Datetime (UTC) at which the match was created',
             ],
-            'participants' => [
-                'type' => Type::listOf(GraphQL::type('Participant')),
-                'description' => 'List of participants in the match',
+            'participations' => [
+                'type' => Type::listOf(GraphQL::type('Participation')),
+                'description' => 'List of participations in the match',
             ],
         ];
     }
