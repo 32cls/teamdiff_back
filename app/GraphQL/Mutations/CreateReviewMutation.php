@@ -60,16 +60,16 @@ class CreateReviewMutation extends Mutation
         else
         {
             $match = LoLMatch::where('id', $input['match_id'])->first();
-            $reviewer = Participant::where('summoner_id', $hardcoded_reviewer_id)->first();
-            $reviewee = Participant::where('summoner_id', $input['reviewee_id'])->first();
+            $reviewer = Participant::where('summoner_id', $hardcoded_reviewer_id)
+                ->where('match_id', $input['match_id'])
+                ->first();
+            $reviewee = Participant::where('summoner_id', $input['reviewee_id'])
+                ->where('match_id', $input['match_id'])
+                ->first();
             if(!$match || !$reviewer || !$reviewee){
                 throw new Error("Bad request");
             }
-            if (!$match->participants()->whereIn('summoner_id', [$hardcoded_reviewer_id, $input['reviewee_id']])->exists())
-            {
-                throw new Error("Bad request, the match does not contain the participants");
-            }
-            if (Review::where(['reviewer_id' => $reviewer->id, 'reviewee_id' => $reviewee->id])->exists())
+            if (Review::where(['reviewer_id' => $reviewer->id, 'reviewee_id' => $reviewee->id, 'match_id' => $match->id])->exists())
             {
                 throw new Error("A review already exists for this match with provided reviewer/reviewee tuple");
             }
