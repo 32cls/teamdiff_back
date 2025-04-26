@@ -13,10 +13,12 @@
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^12.0",
         "laravel/scout": "^10.14",
+        "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.10.1",
         "meilisearch/meilisearch-php": "^1.14",
         "mll-lab/laravel-graphiql": "^3.3",
-        "rebing/graphql-laravel": "^9.9"
+        "rebing/graphql-laravel": "^9.9",
+        "socialiteproviders/discord": "^4.2"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.5",
