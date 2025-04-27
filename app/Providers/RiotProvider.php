@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
-use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User;
+use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 
 class RiotProvider extends AbstractProvider
 {
+
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase('https://auth.riotgames.com/authorize', $state);
