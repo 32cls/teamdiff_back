@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controller;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;

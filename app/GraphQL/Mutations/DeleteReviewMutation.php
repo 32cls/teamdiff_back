@@ -2,13 +2,13 @@
 
 namespace App\GraphQL\Mutations;
 
-use App\GraphQL\Traits\RateLimited;
+use App\Http\Traits\RateLimited;
 use App\Models\Review;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
-use Rebing\GraphQL\Support\Mutation;
 use GraphQL\Type\Definition\Type;
+use Rebing\GraphQL\Support\Mutation;
 
 class DeleteReviewMutation extends Mutation
 {

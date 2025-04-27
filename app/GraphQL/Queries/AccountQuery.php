@@ -2,7 +2,7 @@
 
 namespace App\GraphQL\Queries;
 
-use App\GraphQL\Traits\RateLimited;
+use App\Http\Traits\RateLimited;
 use App\Models\Account;
 use App\Models\LoLMatch;
 use App\Models\Participation;
