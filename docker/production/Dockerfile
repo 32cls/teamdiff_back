@@ -27,7 +27,7 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN git config --global --add safe.directory . && composer install
 
 # Fix permissions: make Laravel storage & cache writable for www-data
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN mkdir -p /.config/psysh && chown -R www-data:www-data /var/www/html /.config/psysh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 

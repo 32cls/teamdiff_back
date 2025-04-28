@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Wait for Postgres to be ready (adjust host and port as needed)
-/wait-for teamdiff_db:5432 --timeout=60 -- echo "Database is up"
+/wait-for db:5432 --timeout=60 -- echo "Database is up"
 
 # Move to app directory
 cd /var/www/html

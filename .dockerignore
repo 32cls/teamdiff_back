@@ -1,0 +1,9 @@
+.env.*
+.git*
+vendor/
+node_modules/
+tests/
+README.md
+phpunit.xml
+.idea/
+.editorconfig
