@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Mutations;
 
 use App\Http\Traits\RateLimited;
@@ -12,7 +14,6 @@ use Rebing\GraphQL\Support\Mutation;
 
 class DeleteReviewMutation extends Mutation
 {
-
     use RateLimited;
 
     protected $attributes = [
@@ -27,11 +28,11 @@ class DeleteReviewMutation extends Mutation
     public function args(): array
     {
         return [
-            "id" => [
+            'id' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The id of the review to delete',
                 'rules' => ['required'],
-            ]
+            ],
         ];
     }
 
@@ -42,10 +43,11 @@ class DeleteReviewMutation extends Mutation
     {
         $this->enforceRateLimit('DeleteReviewMutation', 20, 10);
         $review = Review::find($args['id']);
-        if (!$review) {
+        if (! $review) {
             throw new Error('Review not found');
         }
         $review->delete();
+
         return true;
     }
 }

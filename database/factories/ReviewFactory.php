@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Participation;
@@ -21,7 +23,7 @@ class ReviewFactory extends Factory
         return [
             'id' => fake()->uuid(),
             'content' => fake()->paragraph(),
-            'rating' => fake()->randomFloat(1,0,5),
+            'rating' => fake()->randomFloat(1, 0, 5),
             'receiverId' => Participation::factory(),
             'reviewerId' => Participation::factory(),
             'isAlly' => fake()->boolean(),

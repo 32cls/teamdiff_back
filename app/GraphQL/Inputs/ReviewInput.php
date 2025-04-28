@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Inputs;
 
-use Rebing\GraphQL\Support\InputType;
 use GraphQL\Type\Definition\Type;
+use Rebing\GraphQL\Support\InputType;
+
 class ReviewInput extends InputType
 {
     protected $attributes = [
@@ -37,8 +40,7 @@ class ReviewInput extends InputType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The identifier of the receiver of the review (summoner id)',
                 'rules' => ['required'],
-            ]
+            ],
         ];
     }
-
 }

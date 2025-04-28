@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Account;
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
 
 Route::get('/', function () {
     return view('welcome');

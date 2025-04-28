@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\ReviewController;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -14,12 +16,10 @@ Route::get('/auth/callback', function () {
         'puuid' => $user->getId(),
     ], [
         'name' => $user->getNickname(),
-        'tag' => explode("#", $user->getName())[1],
-        'refreshedAt' => now()
+        'tag' => explode('#', $user->getName())[1],
+        'refreshedAt' => now(),
     ]);
 
 });
 
 Route::apiResource('reviews', ReviewController::class);
-
-

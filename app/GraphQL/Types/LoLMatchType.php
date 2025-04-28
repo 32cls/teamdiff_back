@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Types;
 
-use GraphQL\Type\Definition\Type;
 use App\Models\LoLMatch;
+use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Type as GraphQLType;
 
@@ -36,5 +38,4 @@ class LoLMatchType extends GraphQLType
             ],
         ];
     }
-
 }

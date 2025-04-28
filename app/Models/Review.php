@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\ReviewFactory;
@@ -13,21 +15,27 @@ class Review extends Model
 {
     /** @use HasFactory<ReviewFactory> */
     use HasFactory;
+
     use HasUuids;
     use SoftDeletes;
 
     protected $table = 'reviews';
+
     const CREATED_AT = 'createdAt';
+
     const UPDATED_AT = 'updatedAt';
+
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
         'content',
         'rating',
         'revieweeId',
-        'isAlly'
+        'isAlly',
     ];
 
     public function reviewer(): BelongsTo
@@ -39,5 +47,4 @@ class Review extends Model
     {
         return $this->belongsTo(Participation::class, 'receiverId');
     }
-
 }

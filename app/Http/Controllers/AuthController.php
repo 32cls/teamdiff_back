@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Client\ConnectionException;
@@ -12,15 +14,19 @@ use Illuminate\Support\Facades\Http;
 class AuthController extends Controller
 {
     private string $provider;
+
     private string $clientId;
+
     private string $clientSecret;
+
     private string $callback;
+
     public function __construct()
     {
         $this->provider = config('riot.provider');
         $this->clientId = config('riot.clientId');
         $this->clientSecret = config('riot.clientSecret');
-        $this->callback = url("/oauth2-callback");
+        $this->callback = url('/oauth2-callback');
     }
 
     public function index(): JsonResponse
@@ -40,13 +46,13 @@ class AuthController extends Controller
             [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
-                'redirect_uri' => $this->callback
+                'redirect_uri' => $this->callback,
             ]
         );
         $response->throw();
         $json = $response->json();
-        $refreshToken = $json["refresh_token"];
-        $idToken = $json["id_token"];
-        $accessToken = $json["access_token"];
+        $refreshToken = $json['refresh_token'];
+        $idToken = $json['id_token'];
+        $accessToken = $json['access_token'];
     }
 }

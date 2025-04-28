@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Types;
+
 use App\Models\Summoner;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Facades\GraphQL;
@@ -30,8 +33,8 @@ class SummonerType extends GraphQLType
                 'description' => 'Experience level of the summoner',
             ],
             'account' => [
-              'type' => Type::nonNull(GraphQL::type('Account')),
-              'description' => 'The account associated with the summoner',
+                'type' => Type::nonNull(GraphQL::type('Account')),
+                'description' => 'The account associated with the summoner',
             ],
             'participations' => [
                 'type' => Type::listOf(GraphQL::type('Participation')),
@@ -73,10 +76,10 @@ class SummonerType extends GraphQLType
                     $count = $reviews->count();
 
                     $perChampion = $root->participations
-                        ->filter(fn($participation) => $participation->receivedReviews->isNotEmpty())
+                        ->filter(fn ($participation) => $participation->receivedReviews->isNotEmpty())
                         ->groupBy('championId')
                         ->map(function ($group, $championId) {
-                            $allReviews = $group->flatMap(fn($participation) => $participation->receivedReviews);
+                            $allReviews = $group->flatMap(fn ($participation) => $participation->receivedReviews);
 
                             return [
                                 'count' => $allReviews->count(),
@@ -85,7 +88,7 @@ class SummonerType extends GraphQLType
                             ];
                         });
 
-                    if (!isset($args['bestRatingOrder']) || $args['bestRatingOrder'] === 'desc') {
+                    if (! isset($args['bestRatingOrder']) || $args['bestRatingOrder'] === 'desc') {
                         $perChampion = $perChampion->sortByDesc('rating');
                     } else {
                         $perChampion = $perChampion->sort('rating');
@@ -102,5 +105,4 @@ class SummonerType extends GraphQLType
             ],
         ];
     }
-
 }

@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Types;
 
 use App\Models\Account;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Type as GraphQLType;
+
 class AccountType extends GraphQLType
 {
     protected $attributes = [
@@ -40,7 +43,7 @@ class AccountType extends GraphQLType
             'summoner' => [
                 'type' => GraphQL::type('Summoner'),
                 'description' => 'Optional summoner associated with the account',
-            ]
+            ],
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Queries;
 
 use App\Http\Traits\RateLimited;
@@ -25,12 +27,13 @@ use Rebing\GraphQL\Support\Query;
 class AccountQuery extends Query
 {
     use RateLimited;
+
     private $client;
 
     public function __construct()
     {
         $this->client = Http::acceptJson()->withHeaders([
-            'X-Riot-Token' => config('riot.apiKey')
+            'X-Riot-Token' => config('riot.apiKey'),
         ]);
     }
 
@@ -40,7 +43,7 @@ class AccountQuery extends Query
 
     public function type(): Type
     {
-        return GraphQL::type("Account");
+        return GraphQL::type('Account');
     }
 
     public function args(): array
@@ -60,7 +63,7 @@ class AccountQuery extends Query
                 'type' => Type::nonNull(GraphQL::type('RegionEnum')),
                 'description' => 'The account region',
                 'rules' => ['required'],
-            ]
+            ],
         ];
     }
 
@@ -70,13 +73,13 @@ class AccountQuery extends Query
     private function fetchAccount(string $name, string $tag)
     {
         try {
-             return $this->client->withUrlParameters([
+            return $this->client->withUrlParameters([
                 'name' => $name,
-                'tag' => $tag
+                'tag' => $tag,
             ])->get('https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}')
                 ->throw()
                 ->json();
-        } catch (ConnectionException | RequestException $e) {
+        } catch (ConnectionException|RequestException $e) {
             throw new Error("Failed to fetch account : {$e->getMessage()}");
         }
     }
@@ -89,11 +92,11 @@ class AccountQuery extends Query
         try {
             return $this->client->withUrlParameters([
                 'region' => strtolower($region),
-                'puuid' => $puuid
+                'puuid' => $puuid,
             ])->get('https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}')
                 ->throw()
                 ->json();
-        } catch (ConnectionException | RequestException $e) {
+        } catch (ConnectionException|RequestException $e) {
             throw new Error("Failed to fetch summoner : {$e->getMessage()}");
         }
     }
@@ -109,12 +112,12 @@ class AccountQuery extends Query
                 'region' => $this->continent($region),
                 'puuid' => $puuid,
             ])->withQueryParameters([
-                'queue' => config("riot.queue"),
-                'count' => config("riot.matchesBatch"),
+                'queue' => config('riot.queue'),
+                'count' => config('riot.matchesBatch'),
             ])->get('https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids')
                 ->throw()
                 ->json();
-        } catch (ConnectionException | RequestException $e) {
+        } catch (ConnectionException|RequestException $e) {
             throw new Error("Failed to fetch match ids : {$e->getMessage()}");
         }
     }
@@ -124,15 +127,16 @@ class AccountQuery extends Query
         $found = LoLMatch::whereIn('id', $matchids)->get();
         $missingMatches = collect($matchids)->diff($found)->toArray();
         $pool = Http::pool(fn (Pool $pool) => array_map(
-                fn($match) => $pool
-                            ->withHeaders(['X-Riot-Token' => config('riot.apiKey')])
-                            ->acceptJson()
-                            ->get("https://{$this->continent($region)}.api.riotgames.com/lol/match/v5/matches/$match"),
-                $missingMatches)
+            fn ($match) => $pool
+                ->withHeaders(['X-Riot-Token' => config('riot.apiKey')])
+                ->acceptJson()
+                ->get("https://{$this->continent($region)}.api.riotgames.com/lol/match/v5/matches/$match"),
+            $missingMatches)
         );
         foreach ($pool as $response) {
             $response->throw();
         }
+
         return $pool;
     }
 
@@ -140,8 +144,8 @@ class AccountQuery extends Query
     {
         $existingMatches = LoLMatch::whereIn('id', $matchIds)->pluck('id')->all();
         $newMatches = collect($matches)
-            ->filter(fn($match) => !in_array($match['metadata']['matchId'], $existingMatches))
-            ->map(fn($match) => [
+            ->filter(fn ($match) => ! in_array($match['metadata']['matchId'], $existingMatches))
+            ->map(fn ($match) => [
                 'id' => $match['metadata']['matchId'],
                 'duration' => $match['info']['gameDuration'],
                 'gameCreation' => Carbon::createFromTimestampMs($match['info']['gameCreation']),
@@ -150,7 +154,7 @@ class AccountQuery extends Query
             ->values()
             ->all();
 
-        if (!empty($newMatches)) {
+        if (! empty($newMatches)) {
             LoLMatch::upsert($newMatches, ['id'], ['duration', 'gameCreation']);
         }
     }
@@ -161,18 +165,18 @@ class AccountQuery extends Query
 
         $newAccounts = $puuids
             ->diff($existingAccounts->keys())
-            ->map(fn($mapPuuid) => [
+            ->map(fn ($mapPuuid) => [
                 'puuid' => $mapPuuid,
                 'name' => optional($participations->firstWhere('puuid', $mapPuuid))['riotIdGameName'],
                 'tag' => optional($participations->firstWhere('puuid', $mapPuuid))['riotIdTagline'],
                 'refreshedAt' => $mapPuuid == $puuid ? now() : null,
-                'region' => $region
+                'region' => $region,
             ])
             ->unique('puuid')  // Prevent duplicate puuids
             ->values()
             ->all();
 
-        if (!empty($newAccounts)) {
+        if (! empty($newAccounts)) {
             Account::upsert($newAccounts, ['puuid'], ['name', 'tag', 'refreshedAt', 'region']);
         }
 
@@ -181,8 +185,8 @@ class AccountQuery extends Query
     private function upsertSummoners(Collection $participations, Collection $existingSummoners): void
     {
         $newSummoners = $participations
-            ->filter(fn($p) => !isset($existingSummoners[$p['summonerId']]))
-            ->map(fn($p) => [
+            ->filter(fn ($p) => ! isset($existingSummoners[$p['summonerId']]))
+            ->map(fn ($p) => [
                 'id' => $p['summonerId'],
                 'accountPuuid' => $p['puuid'],
                 'icon' => $p['profileIcon'],
@@ -192,7 +196,7 @@ class AccountQuery extends Query
             ->values()
             ->all();
 
-        if (!empty($newSummoners)) {
+        if (! empty($newSummoners)) {
             Summoner::upsert($newSummoners, ['id'], ['accountPuuid', 'icon', 'level']);
             $accountPuuids = collect($newSummoners)->pluck('accountPuuid')->unique();
             Account::whereIn('puuid', $accountPuuids)->searchable();
@@ -225,13 +229,13 @@ class AccountQuery extends Query
                 ];
             });
         })
-            ->filter(fn($p) => $p['matchId'] !== null && $p['summonerId'] !== null)  // Remove any null values
-            ->unique(fn($p) => $p['matchId'] . '-' . $p['summonerId']) // Ensure uniqueness
+            ->filter(fn ($p) => $p['matchId'] !== null && $p['summonerId'] !== null)  // Remove any null values
+            ->unique(fn ($p) => $p['matchId'].'-'.$p['summonerId']) // Ensure uniqueness
             ->values()
             ->all();
 
         // Perform the upsert for all participations at once
-        if (!empty($participationData)) {
+        if (! empty($participationData)) {
             Participation::upsert($participationData, ['matchId', 'summonerId'], [
                 'championId',
                 'teamId',
@@ -243,8 +247,10 @@ class AccountQuery extends Query
                 'level',
             ]);
         }
+
         return $returnAccount;
     }
+
     private function createCompleteMatches(array $matches, string $puuid, string $region): Account
     {
         // === Phase 1: Upsert Matches ===
@@ -254,7 +260,7 @@ class AccountQuery extends Query
         $matchesById = LoLMatch::whereIn('id', $matchIds)->get()->keyBy('id');
 
         // === Phase 2: Upsert Accounts ===
-        $participations = collect($matches)->flatMap(fn($match) => $match['info']['participants']);
+        $participations = collect($matches)->flatMap(fn ($match) => $match['info']['participants']);
         $puuids = $participations->pluck('puuid')->unique();
         Log::debug($puuids);
         $this->upsertAccounts($puuids, $participations, $puuid, $region);
@@ -299,7 +305,7 @@ class AccountQuery extends Query
         $account = Account::select($select)->with($with)->firstWhere((
             ['name' => $args['name'], 'tag' => $args['tag'], 'region' => $region]
         ));
-        if (!$account || !$account->refreshedAt || now()->diffInMinutes($account->refreshedAt) > config("riot.refreshLimit")) {
+        if (! $account || ! $account->refreshedAt || now()->diffInMinutes($account->refreshedAt) > config('riot.refreshLimit')) {
             $accountResponse = $this->fetchAccount($args['name'], $args['tag']);
 
             $puuid = $accountResponse['puuid'];
@@ -320,6 +326,7 @@ class AccountQuery extends Query
             $account = $this->createCompleteMatches($matchesResponse, $puuid, $region);
             $account = Account::select($select)->with($with)->find($account->puuid);
         }
+
         return $account;
     }
 }

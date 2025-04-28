@@ -1,10 +1,7 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
-use App\GraphQL\Enums\OrderEnum;
-use App\GraphQL\Enums\RegionEnum;
-use App\GraphQL\Enums\RoleEnum;
 use App\GraphQL\Inputs\ReviewInput;
 use App\GraphQL\Mutations\CreateReviewMutation;
 use App\GraphQL\Mutations\DeleteReviewMutation;
@@ -16,6 +13,9 @@ use App\GraphQL\Types\ParticipationType;
 use App\GraphQL\Types\ReviewSummaryType;
 use App\GraphQL\Types\ReviewType;
 use App\GraphQL\Types\SummonerType;
+use App\Models\Enums\OrderEnum;
+use App\Models\Enums\RegionEnum;
+use App\Models\Enums\RoleEnum;
 
 return [
     'route' => [
@@ -24,7 +24,7 @@ return [
 
         // The controller/method to use in GraphQL request.
         // Also supported array syntax: `[\Rebing\GraphQL\GraphQLController::class, 'query']`
-        'controller' => Rebing\GraphQL\GraphQLController::class . '@query',
+        'controller' => Rebing\GraphQL\GraphQLController::class.'@query',
 
         // Any middleware for the graphql route group
         // This middleware will apply to all schemas
@@ -90,7 +90,7 @@ return [
     'schemas' => [
         'default' => [
             'query' => [
-                AccountQuery::class
+                AccountQuery::class,
             ],
             'mutation' => [
                 CreateReviewMutation::class,
@@ -108,7 +108,7 @@ return [
                 AverageRatingPerChampionType::class,
                 OrderEnum::class,
                 RegionEnum::class,
-                RoleEnum::class
+                RoleEnum::class,
             ],
 
             // Laravel HTTP middleware
@@ -224,7 +224,7 @@ return [
         'cache_driver' => env('GRAPHQL_APQ_CACHE_DRIVER', config('cache.default')),
 
         // The cache prefix
-        'cache_prefix' => config('cache.prefix') . ':graphql.apq',
+        'cache_prefix' => config('cache.prefix').':graphql.apq',
 
         // The cache ttl in seconds - See https://www.apollographql.com/docs/apollo-server/performance/apq/#adjusting-cache-time-to-live-ttl
         'cache_ttl' => 300,

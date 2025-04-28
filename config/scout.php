@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Account;
 
 return [
@@ -145,7 +147,7 @@ return [
             Account::class => [
                 'filterableAttributes' => ['name', 'tag'],
                 'searchableAttributes' => ['name', 'tag'],
-            ]
+            ],
         ],
     ],
 

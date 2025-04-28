@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -27,7 +29,7 @@ return [
     'riot' => [
         'client_id' => env('RIOT_CLIENT_ID'),
         'client_secret' => env('RIOT_CLIENT_SECRET'),
-        'redirect' => env("CALLBACK_URL"),
+        'redirect' => env('CALLBACK_URL'),
     ],
 
     'resend' => [

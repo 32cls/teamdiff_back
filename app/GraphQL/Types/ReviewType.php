@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Types;
 
 use App\Models\Review;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
 use Rebing\GraphQL\Support\Facades\GraphQL;
-
+use Rebing\GraphQL\Support\Type as GraphQLType;
 
 class ReviewType extends GraphQLType
 {
@@ -25,19 +26,19 @@ class ReviewType extends GraphQLType
             ],
             'content' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Content of the review'
+                'description' => 'Content of the review',
             ],
             'rating' => [
                 'type' => Type::nonNull(Type::float()),
-                'description' => 'Rating of the player\'s performance'
+                'description' => 'Rating of the player\'s performance',
             ],
             'createdAt' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Creation date of the review'
+                'description' => 'Creation date of the review',
             ],
             'updatedAt' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Modification date of the review'
+                'description' => 'Modification date of the review',
             ],
             'reviewer' => [
                 'type' => GraphQL::type('Participation'),
@@ -45,12 +46,12 @@ class ReviewType extends GraphQLType
             ],
             'receiver' => [
                 'type' => GraphQL::type('Participation'),
-                'description' => 'Receiver of the review'
+                'description' => 'Receiver of the review',
             ],
             'isAlly' => [
                 'type' => Type::nonNull(Type::boolean()),
-                'description' => 'Is the summoner reviewed an ally of the reviewer'
-            ]
+                'description' => 'Is the summoner reviewed an ally of the reviewer',
+            ],
         ];
     }
 }

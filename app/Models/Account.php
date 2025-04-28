@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,12 +12,13 @@ use Laravel\Scout\Searchable;
 
 class Account extends Model
 {
-
     use HasFactory;
     use Searchable;
 
     protected $primaryKey = 'puuid';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     public $timestamps = false;
@@ -30,7 +33,7 @@ class Account extends Model
         'name',
         'tag',
         'refreshedAt',
-        'region'
+        'region',
     ];
 
     protected function casts(): array
@@ -42,12 +45,12 @@ class Account extends Model
 
     public function toSearchableArray(): array
     {
-       return [
-           'name' => $this->name,
-           'tag' => $this->tag,
-           'summonerIcon' => $this->summoner->icon ?? null,
-           'region' => $this->region
-       ];
+        return [
+            'name' => $this->name,
+            'tag' => $this->tag,
+            'summonerIcon' => $this->summoner->icon ?? null,
+            'region' => $this->region,
+        ];
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder
@@ -55,4 +58,3 @@ class Account extends Model
         return $query->with('summoner');
     }
 }
-

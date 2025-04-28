@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\LoLMatchFactory;
@@ -11,6 +13,7 @@ class LoLMatch extends Model
 {
     /** @use HasFactory<LoLMatchFactory> */
     use HasFactory;
+
     protected $keyType = 'string';
 
     protected $table = 'lolmatches';
@@ -20,7 +23,7 @@ class LoLMatch extends Model
     protected $fillable = [
         'id',
         'duration',
-        'gameCreation'
+        'gameCreation',
     ];
 
     public function participations(): HasMany
@@ -34,5 +37,4 @@ class LoLMatch extends Model
             'gameCreation' => 'datetime:Y-m-d H:i:s',
         ];
     }
-
 }

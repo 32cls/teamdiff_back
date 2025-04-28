@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\SummonerFactory;
@@ -14,6 +16,7 @@ class Summoner extends Model
     use HasFactory;
 
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -31,5 +34,4 @@ class Summoner extends Model
     {
         return $this->hasMany(Participation::class, 'summonerId');
     }
-
 }

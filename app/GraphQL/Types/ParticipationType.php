@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\GraphQL\Types;
 
 use App\Models\Participation;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
 use Rebing\GraphQL\Support\Facades\GraphQL;
+use Rebing\GraphQL\Support\Type as GraphQLType;
+
 class ParticipationType extends GraphQLType
 {
     protected $attributes = [
@@ -63,9 +66,8 @@ class ParticipationType extends GraphQLType
             ],
             'lolMatch' => [
                 'type' => Type::nonNull(GraphQL::type('LolMatch')),
-                'description' => 'Related match linked to player participation'
-            ]
+                'description' => 'Related match linked to player participation',
+            ],
         ];
     }
-
 }
