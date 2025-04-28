@@ -1,13 +1,12 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "32cls/teamdiff",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "r8 ur m8.",
     "keywords": [
-        "laravel",
-        "framework"
+        "LoL"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "http-interop/http-factory-guzzle": "^1.2",
@@ -16,8 +15,6 @@
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.10.1",
         "meilisearch/meilisearch-php": "^1.14",
-        "mll-lab/laravel-graphiql": "^3.3",
-        "rebing/graphql-laravel": "^9.9",
         "socialiteproviders/discord": "^4.2"
     },
     "require-dev": {
