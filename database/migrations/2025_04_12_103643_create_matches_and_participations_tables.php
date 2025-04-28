@@ -13,24 +13,25 @@ return new class extends Migration
     {
         Schema::create('lolmatches', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->integer("duration")->nullable(false);
-            $table->timestamp("gameCreation")->nullable(false);
+            $table->integer('duration');
+            $table->timestamp('game_creation');
         });
+
         Schema::create('participations', function (Blueprint $table) {
             $table->id();
-            $table->string("championId")->nullable(false);
-            $table->integer("teamId")->nullable(false);
-            $table->string("role")->nullable(false);
-            $table->boolean("win")->nullable(false);
-            $table->integer("kills")->nullable(false);
-            $table->integer("deaths")->nullable(false);
-            $table->integer("assists")->nullable(false);
-            $table->integer("level")->nullable(false);
-            $table->string('matchId')->nullable(false);
-            $table->string('summonerId')->nullable(false);
-            $table->foreign("summonerId")->references('id')->on('summoners')->onDelete('cascade');
-            $table->foreign("matchId")->references('id')->on('lolmatches')->onDelete('cascade');
-            $table->unique(['matchId', 'summonerId']);
+            $table->string('champion_id');
+            $table->integer('team_id');
+            $table->string('role');
+            $table->boolean('win');
+            $table->integer('kills');
+            $table->integer('deaths');
+            $table->integer('assists');
+            $table->integer('level');
+            $table->string('match_id');
+            $table->string('summoner_id');
+            $table->foreign('summoner_id')->references('id')->on('summoners')->onDelete('cascade');
+            $table->foreign('match_id')->references('id')->on('lolmatches')->onDelete('cascade');
+            $table->unique(['match_id', 'summoner_id']);
         });
     }
 
