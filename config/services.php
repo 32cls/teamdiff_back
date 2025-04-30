@@ -27,9 +27,10 @@ return [
     ],
 
     'riot' => [
-        'client_id' => env('RIOT_CLIENT_ID'),
-        'client_secret' => env('RIOT_CLIENT_SECRET'),
-        'redirect' => env('CALLBACK_URL'),
+        'client_id' => env('RIOT_OAUTH_CLIENT_ID'),
+        'client_secret' => env('RIOT_OAUTH_CLIENT_SECRET'),
+        'redirect' => env('RIOT_OAUTH_CALLBACK_URL'),
+        'base_url' => env('RIOT_OAUTH_BASE_URL'),
     ],
 
     'resend' => [
