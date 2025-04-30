@@ -24,7 +24,8 @@ RUN apk add --no-cache \
     php84-xmlreader \
     php84-xmlwriter \
     postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+    && docker-php-ext-install pdo pdo_pgsql \
+    && mkdir -p /.config/psysh && chown -R 1000:1000 /.config/psysh
 
 COPY docker/local/php-fpm.conf /etc/php84/php-fpm.d/default.conf
 
