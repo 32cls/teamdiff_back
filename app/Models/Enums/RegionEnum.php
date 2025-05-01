@@ -6,7 +6,7 @@ namespace App\Models\Enums;
 
 enum RegionEnum: string
 {
-    use EnumEnhancementsTrait;
+    use EnumEnhancements;
 
     case NA1 = 'NA1';
     case BR1 = 'BR1';

@@ -6,7 +6,7 @@ namespace App\Models\Enums;
 
 enum RoleEnum: string
 {
-    use EnumEnhancementsTrait;
+    use EnumEnhancements;
 
     case Top = 'TOP';
     case Jungle = 'JUNGLE';

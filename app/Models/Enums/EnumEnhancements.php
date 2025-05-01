@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Enums;
 
-trait EnumEnhancementsTrait
+trait EnumEnhancements
 {
     /**
      * Returns enum values as an array.
