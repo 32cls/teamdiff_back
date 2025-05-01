@@ -3,9 +3,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "typegen": "laravel-typegen && echo apply Date type instead of any && sed -i -E 's/_at(\\?)?: any/_at\\1: Date/g' resources/js/types/model.ts"
     },
     "devDependencies": {
+        "@7nohe/laravel-typegen": "^0.6.1",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.8.2",
         "concurrently": "^9.0.1",
