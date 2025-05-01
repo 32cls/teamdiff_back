@@ -59,8 +59,8 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            $table->foreignUlid('reviewer_id')->constrained('lol_players', 'id');
-            $table->foreignUlid('reviewee_id')->constrained('lol_players', 'id');
+            $table->foreignUlid('author_id')->constrained('lol_players', 'id');
+            $table->foreignUlid('subject_id')->constrained('lol_players', 'id');
         });
     }
 
