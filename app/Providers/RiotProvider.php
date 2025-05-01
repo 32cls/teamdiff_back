@@ -4,40 +4,46 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
+use Laravel\Socialite\Two\ProviderInterface;
 use Laravel\Socialite\Two\User;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 
-class RiotProvider extends AbstractProvider
+class RiotProvider extends AbstractProvider implements ProviderInterface
 {
-    protected function getAuthUrl($state)
+    protected function getAuthUrl($state): string
     {
-        return $this->buildAuthUrlFromBase('https://auth.riotgames.com/authorize', $state);
+        return $this->buildAuthUrlFromBase(config('services.riot.base_url') . '/oauth/authorize', $state);
     }
 
-    protected function getTokenUrl()
+    protected function getTokenUrl(): string
     {
-        return 'https://auth.riotgames.com/token';
+        return config('services.riot.base_url') . '/oauth/token';
     }
 
-    protected function getUserByToken($token)
+    /**
+     * @throws GuzzleException
+     */
+    protected function getUserByToken(#[\SensitiveParameter] $token)
     {
-        $response = $this->getHttpClient()->get('https://europe.api.riotgames.com/riot/account/v1/accounts/me', [
-            'headers' => [
-                'Authorization' => 'Bearer '.$token,
-            ],
-        ]);
+        $response = $this->getHttpClient()
+            ->get(config('services.riot.base_url') . '/api/me', [
+                RequestOptions::HEADERS => [
+                    'Accepts' => 'application/json',
+                    'Authorization' => "Bearer {$token}",
+                ],
+            ]);
 
-        return json_decode($response->getBody(), true);
+        return json_decode($response->getBody()->getContents(), true);
     }
 
-    protected function mapUserToObject(array $user)
+    protected function mapUserToObject(array $user): User
     {
         return (new User)->setRaw($user)->map([
             'id' => $user['puuid'],
             'nickname' => $user['gameName'],
-            'name' => sprintf('%s#%s', $user['gameName'], $user['tagLine']),
-            'email' => null,
-            'avatar' => null,
+            'name' => "{$user['gameName']} {$user['tagLine']}",
         ]);
     }
 }
