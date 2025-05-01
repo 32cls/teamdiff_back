@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Enums\RegionEnum;
 use App\Models\Enums\RoleEnum;
 use Illuminate\Database\Migrations\Migration;

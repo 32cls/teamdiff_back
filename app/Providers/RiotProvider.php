@@ -14,12 +14,12 @@ class RiotProvider extends AbstractProvider implements ProviderInterface
 {
     protected function getAuthUrl($state): string
     {
-        return $this->buildAuthUrlFromBase(config('services.riot.base_url') . '/oauth/authorize', $state);
+        return $this->buildAuthUrlFromBase(config('services.riot.base_url').'/oauth/authorize', $state);
     }
 
     protected function getTokenUrl(): string
     {
-        return config('services.riot.base_url') . '/oauth/token';
+        return config('services.riot.base_url').'/oauth/token';
     }
 
     /**
@@ -28,7 +28,7 @@ class RiotProvider extends AbstractProvider implements ProviderInterface
     protected function getUserByToken(#[\SensitiveParameter] $token)
     {
         $response = $this->getHttpClient()
-            ->get(config('services.riot.base_url') . '/api/me', [
+            ->get(config('services.riot.base_url').'/api/me', [
                 RequestOptions::HEADERS => [
                     'Accepts' => 'application/json',
                     'Authorization' => "Bearer {$token}",
