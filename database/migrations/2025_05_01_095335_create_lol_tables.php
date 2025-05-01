@@ -1,0 +1,77 @@
+<?php
+
+use App\Models\Enums\RegionEnum;
+use App\Models\Enums\RoleEnum;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('lol_summoners', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('riot_summoner_id')->unique();
+            $table->string('user_puuid');
+            $table->enum('region', RegionEnum::valueArray());
+            $table->integer('icon_id');
+            $table->integer('level');
+            $table->timestamps();
+
+            $table->foreign('user_puuid')->references('riot_puuid')->on('users')->onDelete('cascade');
+        });
+
+        Schema::create('lol_games', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('riot_id')->unique();
+            $table->integer('duration');
+            $table->timestamp('started_at');
+            $table->timestamps();
+
+        });
+
+        Schema::create('lol_players', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('riot_game_id');
+            $table->string('riot_summoner_id');
+            $table->string('champion_internal_name');
+            $table->integer('team_id');
+            $table->enum('role', RoleEnum::valueArray());
+            $table->boolean('has_won');
+            $table->integer('kills');
+            $table->integer('deaths');
+            $table->integer('assists');
+            $table->integer('level');
+            $table->timestamps();
+
+            $table->foreign('riot_game_id')->references('riot_id')->on('lol_games')->onDelete('cascade');
+            $table->unique(['riot_game_id', 'riot_summoner_id']);
+        });
+
+        Schema::create('lol_reviews', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->text('content');
+            $table->float('rating');
+            $table->softDeletes();
+            $table->timestamps();
+
+            $table->foreignUlid('reviewer_id')->constrained('lol_players', 'id');
+            $table->foreignUlid('reviewee_id')->constrained('lol_players', 'id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('lol_reviews');
+        Schema::dropIfExists('lol_players');
+        Schema::dropIfExists('lol_games');
+        Schema::dropIfExists('lol_summoners');
+    }
+};
