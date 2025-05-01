@@ -6,6 +6,7 @@ use App\Models\Enums\RegionEnum;
 use App\Models\Enums\RoleEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -57,13 +58,19 @@ return new class extends Migration
         Schema::create('lol_reviews', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->text('content');
-            $table->enum('rating', [1, 2, 3, 4, 5]);
+            $table->tinyInteger('rating');
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreignUlid('author_id')->constrained('lol_players', 'id');
             $table->foreignUlid('subject_id')->constrained('lol_players', 'id');
         });
+
+        DB::statement(/** @lang PostgreSQL */ <<<'PGSQL'
+            ALTER TABLE lol_reviews
+                ADD CONSTRAINT rating_amount_between
+                CHECK ( rating > 0 AND rating <= 5 );
+        PGSQL);
     }
 
     /**
