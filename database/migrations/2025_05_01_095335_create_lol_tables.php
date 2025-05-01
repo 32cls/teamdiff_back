@@ -30,7 +30,7 @@ return new class extends Migration
 
         Schema::create('lol_games', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('riot_game_id')->unique();
+            $table->string('riot_match_id')->unique();
             $table->integer('duration');
             $table->timestamp('started_at');
             $table->timestamps();
@@ -39,7 +39,7 @@ return new class extends Migration
 
         Schema::create('lol_players', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('riot_game_id');
+            $table->string('riot_match_id');
             $table->string('riot_summoner_id');
             $table->string('champion_internal_name');
             $table->integer('team_id');
@@ -51,8 +51,8 @@ return new class extends Migration
             $table->integer('level');
             $table->timestamps();
 
-            $table->foreign('riot_game_id')->references('riot_game_id')->on('lol_games')->onDelete('cascade');
-            $table->unique(['riot_game_id', 'riot_summoner_id']);
+            $table->foreign('riot_match_id')->references('riot_match_id')->on('lol_games')->onDelete('cascade');
+            $table->unique(['riot_match_id', 'riot_summoner_id']);
         });
 
         Schema::create('lol_reviews', function (Blueprint $table) {
