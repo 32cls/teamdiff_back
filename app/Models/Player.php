@@ -6,17 +6,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Summoner extends Model
+class Player extends Pivot
 {
     use HasTimestamps;
     use HasUlids;
 
-    protected $table = 'lol_summoners';
+    protected $table = 'lol_players';
 
     public $incrementing = false;
 
@@ -24,24 +23,24 @@ class Summoner extends Model
 
     protected $fillable = [];
 
-    public function user(): BelongsTo
+    public function summoner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_puuid');
+        return $this->belongsTo(Summoner::class, 'riot_summoner_id');
     }
 
-    public function players(): HasMany
+    public function game(): BelongsTo
     {
-        return $this->hasMany(Player::class, 'riot_summoner_id');
+        return $this->belongsTo(Game::class, 'riot_game_id');
     }
 
-    public function games(): BelongsToMany
+    public function writtenReviews(): HasMany
     {
-        return $this->belongsToMany(
-            Game::class,
-            'lol_players',
-            'riot_summoner_id',
-            'riot_game_id',
-        )->using(Player::class);
+        return $this->hasMany(Review::class, 'author_id');
+    }
+
+    public function receivedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'subject_id');
     }
 
     protected function casts(): array

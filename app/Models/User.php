@@ -7,34 +7,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Review extends Model
+class User extends Model
 {
     use HasTimestamps;
     use HasUlids;
-
-    protected $table = 'lol_reviews';
 
     public $incrementing = false;
 
     protected $keyType = 'string';
 
+    public function summoner(): HasOne
+    {
+        return $this->hasOne(Summoner::class, 'user_puuid');
+    }
+
     protected $fillable = [];
-
-    public function author(): BelongsTo
-    {
-        return $this->belongsTo(Player::class, 'author_id');
-    }
-
-    public function subject(): BelongsTo
-    {
-        return $this->belongsTo(Player::class, 'subject_id');
-    }
 
     protected function casts(): array
     {
         return [
+            'refreshed_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];
