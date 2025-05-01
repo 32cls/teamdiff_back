@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Enums;
+namespace App\Enums;
+
+use App\Traits\EnumEnhancements;
 
 enum RegionEnum: string
 {
