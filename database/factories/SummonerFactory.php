@@ -23,7 +23,7 @@ class SummonerFactory extends Factory
         ];
     }
 
-    public function forUser(User $user): Factory
+    public function withUser(User $user): Factory
     {
         return $this->state(function (array $attributes) use ($user) {
             return [
