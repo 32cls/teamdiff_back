@@ -18,7 +18,7 @@ class SummonerSeeder extends Seeder
         User::each(function (User $user) {
             Summoner::factory()
                 ->withUser($user)
-                ->create();
+                ->createOne();
         });
     }
 }

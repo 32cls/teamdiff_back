@@ -27,7 +27,7 @@ class Game extends Model
 
     public function players(): HasMany
     {
-        return $this->hasMany(Player::class, 'riot_match_id');
+        return $this->hasMany(Player::class, 'riot_match_id', 'riot_match_id');
     }
 
     public function summoners(): BelongsToMany

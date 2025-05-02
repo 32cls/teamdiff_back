@@ -21,7 +21,7 @@ class ReviewFactory extends Factory
         ];
     }
 
-    public function byAndAbout(Player $author, Player $subject): Factory
+    public function withAuthorAndSubject(Player $author, Player $subject): Factory
     {
         return $this->state(function (array $attributes) use ($author, $subject) {
             return [

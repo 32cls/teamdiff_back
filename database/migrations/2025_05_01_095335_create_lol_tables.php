@@ -57,13 +57,13 @@ return new class extends Migration
 
         Schema::create('lol_reviews', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->text('content');
-            $table->tinyInteger('rating');
-            $table->softDeletes();
-            $table->timestamps();
-
             $table->foreignUlid('author_id')->constrained('lol_players', 'id');
             $table->foreignUlid('subject_id')->constrained('lol_players', 'id');
+            $table->text('content');
+            $table->tinyInteger('rating');
+
+            $table->softDeletes();
+            $table->timestamps();
         });
 
         DB::statement(/** @lang PostgreSQL */ <<<'PGSQL'
