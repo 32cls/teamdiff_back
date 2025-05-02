@@ -25,7 +25,7 @@ class Game extends Model
 
     protected $fillable = [];
 
-    public function player(): HasMany
+    public function players(): HasMany
     {
         return $this->hasMany(Player::class, 'riot_match_id');
     }
