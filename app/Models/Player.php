@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\RoleEnum;
+use App\Enums\TeamEnum;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,7 +50,8 @@ class Player extends Pivot
     protected function casts(): array
     {
         return [
-            'role' => RoleEnum::class,
+            'riot_role' => RoleEnum::class,
+            'riot_team' => TeamEnum::class,
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];

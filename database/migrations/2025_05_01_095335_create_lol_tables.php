@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\RegionEnum;
 use App\Enums\RoleEnum;
+use App\Enums\TeamEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -34,16 +35,15 @@ return new class extends Migration
             $table->integer('duration');
             $table->timestamp('started_at');
             $table->timestamps();
-
         });
 
         Schema::create('lol_players', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('riot_match_id');
             $table->string('riot_summoner_id');
-            $table->string('champion_internal_name');
-            $table->integer('team_id');
-            $table->enum('role', RoleEnum::valueArray());
+            $table->string('riot_champion_name');
+            $table->enum('riot_team_id', TeamEnum::valueArray())->nullable();
+            $table->enum('riot_role', RoleEnum::valueArray())->nullable();
             $table->boolean('has_won');
             $table->integer('kills');
             $table->integer('deaths');
