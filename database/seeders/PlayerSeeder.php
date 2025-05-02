@@ -16,18 +16,20 @@ class PlayerSeeder extends Seeder
      */
     public function run(): void
     {
-        $roleWinLoseSequence = collect(RoleEnum::valueArray())
-            ->crossJoin([true, false])
-            ->map(fn(array $items) => [
-                'role' => $items[0],
-                'has_won' => $items[1],
-                'team_id' => $items[1] + 1,
-            ]);
-
-        $summonerSequence = Summoner::all()
-            ->map(fn(Summoner $s) => ['riot_summoner_id'=>$s->riot_summoner_id]);
-
         foreach (Game::all() as $i => $game) {
+            $roleWinLoseSequence = collect(RoleEnum::valueArray())
+                ->shuffle()
+                ->crossJoin([true, false])
+                ->map(fn(array $items) => [
+                    'role' => $items[0],
+                    'has_won' => $items[1],
+                    'team_id' => $items[1] + 1,
+                ]);
+
+            $summonerSequence = Summoner::all()
+                ->shuffle()
+                ->map(fn(Summoner $s) => ['riot_summoner_id'=>$s->riot_summoner_id]);
+
             Player::factory()
                 ->count(10)
                 ->sequence(...$roleWinLoseSequence)
