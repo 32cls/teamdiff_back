@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SummonerSeeder::class,
             GameSeeder::class,
             PlayerSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }
