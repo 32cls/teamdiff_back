@@ -29,12 +29,12 @@ class Summoner extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_puuid');
+        return $this->belongsTo(User::class, 'user_puuid', 'riot_puuid');
     }
 
     public function players(): HasMany
     {
-        return $this->hasMany(Player::class, 'riot_summoner_id');
+        return $this->hasMany(Player::class, 'riot_summoner_id', 'riot_summoner_id');
     }
 
     public function games(): BelongsToMany
@@ -43,7 +43,9 @@ class Summoner extends Model
             Game::class,
             'lol_players',
             'riot_summoner_id',
-            'riot_game_id',
+            'riot_match_id',
+            'riot_summoner_id',
+            'riot_match_id'
         )->using(Player::class);
     }
 

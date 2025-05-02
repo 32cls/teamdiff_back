@@ -27,7 +27,7 @@ class Game extends Model
 
     public function player(): HasMany
     {
-        return $this->hasMany(Player::class, 'riot_game_id');
+        return $this->hasMany(Player::class, 'riot_match_id');
     }
 
     public function summoners(): BelongsToMany
@@ -35,7 +35,9 @@ class Game extends Model
         return $this->belongsToMany(
             Summoner::class,
             'lol_players',
-            'riot_game_id',
+            'riot_match_id',
+            'riot_summoner_id',
+            'riot_match_id',
             'riot_summoner_id',
         )->using(Player::class);
     }

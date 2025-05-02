@@ -22,7 +22,7 @@ class User extends Model
 
     public function summoner(): HasOne
     {
-        return $this->hasOne(Summoner::class, 'user_puuid');
+        return $this->hasOne(Summoner::class, 'user_puuid', 'riot_puuid');
     }
 
     protected $fillable = [];

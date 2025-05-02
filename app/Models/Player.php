@@ -28,12 +28,12 @@ class Player extends Pivot
 
     public function summoner(): BelongsTo
     {
-        return $this->belongsTo(Summoner::class, 'riot_summoner_id');
+        return $this->belongsTo(Summoner::class, 'riot_summoner_id', 'riot_summoner_id');
     }
 
     public function game(): BelongsTo
     {
-        return $this->belongsTo(Game::class, 'riot_game_id');
+        return $this->belongsTo(Game::class, 'riot_match_id', 'riot_match_id');
     }
 
     public function writtenReviews(): HasMany
