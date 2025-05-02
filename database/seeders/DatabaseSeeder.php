@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     public static int $userCount = 10;
+
     public static int $gameCount = 4;
 
     /**

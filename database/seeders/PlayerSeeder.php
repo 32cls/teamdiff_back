@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
@@ -7,7 +9,6 @@ use App\Models\Game;
 use App\Models\Player;
 use App\Models\Summoner;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class PlayerSeeder extends Seeder
 {
@@ -20,7 +21,7 @@ class PlayerSeeder extends Seeder
             $roleWinLoseSequence = collect(RoleEnum::valueArray())
                 ->shuffle()
                 ->crossJoin([true, false])
-                ->map(fn(array $items) => [
+                ->map(fn (array $items) => [
                     'role' => $items[0],
                     'has_won' => $items[1],
                     'team_id' => $items[1] + 1,
@@ -28,7 +29,7 @@ class PlayerSeeder extends Seeder
 
             $summonerSequence = Summoner::all()
                 ->shuffle()
-                ->map(fn(Summoner $s) => ['riot_summoner_id'=>$s->riot_summoner_id]);
+                ->map(fn (Summoner $s) => ['riot_summoner_id' => $s->riot_summoner_id]);
 
             Player::factory()
                 ->count(10)

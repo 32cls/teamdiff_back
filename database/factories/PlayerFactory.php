@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\RoleEnum;
 use App\Models\Game;
 use App\Models\Player;
 use App\Models\Summoner;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
