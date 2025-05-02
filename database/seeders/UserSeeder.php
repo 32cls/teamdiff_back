@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\Game;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class GameSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Game::factory()
-            ->count(DatabaseSeeder::$gameCount)
+        User::factory()
+            ->count(DatabaseSeeder::$userCount)
             ->create();
     }
 }

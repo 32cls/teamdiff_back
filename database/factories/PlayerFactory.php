@@ -6,6 +6,7 @@ use App\Enums\RoleEnum;
 use App\Models\Game;
 use App\Models\Player;
 use App\Models\Summoner;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,11 +29,20 @@ class PlayerFactory extends Factory
         ];
     }
 
-    public function withGame(Game $game): Factory
+    public function withGame(Game $game): self
     {
         return $this->state(function (array $attributes) use ($game) {
             return [
                 'riot_match_id' => $game->riot_match_id,
+            ];
+        });
+    }
+
+    public function withSummoner(Summoner $summoner): self
+    {
+        return $this->state(function (array $attributes) use ($summoner) {
+            return [
+                'riot_summoner_id' => $summoner->riot_summoner_id,
             ];
         });
     }
