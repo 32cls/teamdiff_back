@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\RegionEnum;
-use App\Enums\RoleEnum;
-use App\Enums\TeamEnum;
+use App\Models\Game;
+use App\Models\Player;
+use App\Models\Summoner;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -20,45 +22,43 @@ return new class extends Migration
         Schema::create('lol_summoners', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('riot_summoner_id')->unique();
-            $table->string('user_puuid');
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->enum('region', RegionEnum::valueArray());
             $table->string('icon_id');
             $table->integer('level');
             $table->timestamps();
 
-            $table->foreign('user_puuid')->references('riot_puuid')->on('users')->onDelete('cascade');
         });
 
         Schema::create('lol_games', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('riot_match_id')->unique();
             $table->integer('duration');
+            $table->string("winning_team");
             $table->timestamp('started_at');
             $table->timestamps();
         });
 
         Schema::create('lol_players', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('riot_match_id');
-            $table->string('riot_summoner_id');
+            $table->foreignIdFor(Game::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Summoner::class);
             $table->string('riot_champion_name');
-            $table->enum('riot_team_id', TeamEnum::valueArray())->nullable();
-            $table->enum('riot_role', RoleEnum::valueArray())->nullable();
-            $table->boolean('has_won');
+            $table->string('riot_team');
+            $table->string('riot_role');
             $table->integer('kills');
             $table->integer('deaths');
             $table->integer('assists');
             $table->integer('level');
             $table->timestamps();
 
-            $table->foreign('riot_match_id')->references('riot_match_id')->on('lol_games')->onDelete('cascade');
-            $table->unique(['riot_match_id', 'riot_summoner_id']);
+            $table->unique(['summoner_id', 'game_id']);
         });
 
         Schema::create('lol_reviews', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('author_id')->constrained('lol_players', 'id');
-            $table->foreignUlid('subject_id')->constrained('lol_players', 'id');
+            $table->foreignIdFor(Player::class, 'author_id')->constrained();
+            $table->foreignIdFor(Player::class, 'subject_id')->constrained();
             $table->text('content');
             $table->tinyInteger('rating');
 

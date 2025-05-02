@@ -45,6 +45,7 @@ class Game extends Model
     protected function casts(): array
     {
         return [
+            'winning_team' => TeamEnum::class,
             'started_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
