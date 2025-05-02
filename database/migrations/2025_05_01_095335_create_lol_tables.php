@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('riot_summoner_id')->unique();
             $table->string('user_puuid');
             $table->enum('region', RegionEnum::valueArray());
-            $table->integer('icon_id');
+            $table->string('icon_id');
             $table->integer('level');
             $table->timestamps();
 
