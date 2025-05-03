@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @property RoleEnum|string $riot_role
+ * @property TeamEnum|string $riot_team_id
+ */
 class Player extends Pivot
 {
     use HasFactory;
