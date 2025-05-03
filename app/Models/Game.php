@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\TeamEnum;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +28,7 @@ class Game extends Model
 
     public function players(): HasMany
     {
-        return $this->hasMany(Player::class, 'riot_match_id', 'riot_match_id');
+        return $this->hasMany(Player::class);
     }
 
     public function summoners(): BelongsToMany

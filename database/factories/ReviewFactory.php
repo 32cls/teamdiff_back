@@ -20,14 +20,4 @@ class ReviewFactory extends Factory
             'rating' => fake()->numberBetween(1, 5),
         ];
     }
-
-    public function withAuthorAndSubject(Player $author, Player $subject): Factory
-    {
-        return $this->state(function (array $attributes) use ($author, $subject) {
-            return [
-                'author_id' => $author->id,
-                'subject_id' => $subject->id,
-            ];
-        });
-    }
 }

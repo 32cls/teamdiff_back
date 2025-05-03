@@ -18,7 +18,8 @@ class ReviewSeeder extends Seeder
 
             foreach ($mates->random(6) as $mate) {
                 Review::factory()
-                    ->withAuthorAndSubject($player, $mate)
+                    ->for($player, 'author')
+                    ->for($mate, 'subject')
                     ->createOne();
             }
         }

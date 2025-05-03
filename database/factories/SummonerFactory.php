@@ -6,7 +6,6 @@ namespace Database\Factories;
 
 use App\Enums\RegionEnum;
 use App\Models\Summoner;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -23,14 +22,5 @@ class SummonerFactory extends Factory
             'icon_id' => Str::random(5),
             'level' => fake()->numberBetween(1, 1000),
         ];
-    }
-
-    public function withUser(User $user): Factory
-    {
-        return $this->state(function (array $attributes) use ($user) {
-            return [
-                'user_puuid' => $user->riot_puuid,
-            ];
-        });
     }
 }

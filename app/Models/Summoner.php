@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\RegionEnum;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,24 +30,17 @@ class Summoner extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_puuid', 'riot_puuid');
+        return $this->belongsTo(User::class);
     }
 
     public function players(): HasMany
     {
-        return $this->hasMany(Player::class, 'riot_summoner_id', 'riot_summoner_id');
+        return $this->hasMany(Player::class);
     }
 
     public function games(): BelongsToMany
     {
-        return $this->belongsToMany(
-            Game::class,
-            'lol_players',
-            'riot_summoner_id',
-            'riot_match_id',
-            'riot_summoner_id',
-            'riot_match_id'
-        )->using(Player::class);
+        return $this->belongsToMany(Game::class, 'lol_players')->using(Player::class);
     }
 
     protected function casts(): array
