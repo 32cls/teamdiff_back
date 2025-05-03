@@ -34,7 +34,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('riot_match_id')->unique();
             $table->integer('duration');
-            $table->string("winning_team");
+            $table->string("winning_riot_team_id");
             $table->timestamp('started_at');
             $table->timestamps();
         });
@@ -44,7 +44,7 @@ return new class extends Migration
             $table->foreignIdFor(Game::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Summoner::class);
             $table->string('riot_champion_name');
-            $table->string('riot_team');
+            $table->string('riot_team_id');
             $table->string('riot_role');
             $table->integer('kills');
             $table->integer('deaths');

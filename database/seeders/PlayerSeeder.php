@@ -24,7 +24,7 @@ class PlayerSeeder extends Seeder
                 ->crossJoin([TeamEnum::Blue, TeamEnum::Red])
                 ->map(fn (array $items) => [
                     'riot_role' => $items[0],
-                    'riot_team' => $items[1],
+                    'riot_team_id' => $items[1],
                 ]);
 
             $summonerSequence = Summoner::all()

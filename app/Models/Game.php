@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\WeakEnum;
 use App\Enums\TeamEnum;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -46,7 +47,7 @@ class Game extends Model
     protected function casts(): array
     {
         return [
-            'winning_team' => TeamEnum::class,
+            'winning_riot_team_id' => WeakEnum::of(TeamEnum::class),
             'started_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',

@@ -18,7 +18,7 @@ class PlayerFactory extends Factory
     {
         return [
             'riot_champion_name' => fake()->userName(),
-            'riot_team' => fake()->randomElement(TeamEnum::valueArray()),
+            'riot_team_id' => fake()->randomElement(TeamEnum::valueArray()),
             'riot_role' => fake()->randomElement(RoleEnum::valueArray()),
             'kills' => fake()->numberBetween(0, 30),
             'deaths' => fake()->numberBetween(0, 30),

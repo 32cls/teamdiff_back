@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\WeakEnum;
 use App\Enums\RoleEnum;
 use App\Enums\TeamEnum;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
@@ -50,8 +51,8 @@ class Player extends Pivot
     protected function casts(): array
     {
         return [
-            'riot_role' => RoleEnum::class,
-            'riot_team' => TeamEnum::class,
+            'riot_role' => WeakEnum::of(RoleEnum::class),
+            'riot_team_id' => WeakEnum::of(TeamEnum::class),
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];

@@ -6,10 +6,10 @@ namespace App\Enums;
 
 use App\Traits\EnumEnhancements;
 
-enum TeamEnum: int
+enum TeamEnum: string
 {
     use EnumEnhancements;
 
-    case Blue = 100;
-    case Red = 200;
+    case Blue = '100';
+    case Red = '200';
 }
