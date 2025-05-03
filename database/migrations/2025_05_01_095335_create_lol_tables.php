@@ -34,7 +34,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('riot_match_id')->unique();
             $table->integer('duration');
-            $table->string("winning_riot_team_id");
+            $table->string('winning_riot_team_id');
             $table->timestamp('started_at');
             $table->timestamps();
         });

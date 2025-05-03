@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -143,7 +145,7 @@ return [
             \App\Models\Summoner::class => [
                 'filterableAttributes' => ['name', 'tag'],
                 'searchableAttributes' => ['name', 'tag'],
-            ]
+            ],
         ],
     ],
 

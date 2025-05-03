@@ -49,9 +49,10 @@ class Player extends Pivot
     {
         return Attribute::get(function () {
             $winningTeam = $this->game()->first()->winning_riot_team_id;
-            if (isset($this->riot_team_id, $winningTeam, )) {
+            if (isset($this->riot_team_id, $winningTeam)) {
                 return $this->riot_team_id == $winningTeam;
             }
+
             return null;
         })->shouldCache();
     }

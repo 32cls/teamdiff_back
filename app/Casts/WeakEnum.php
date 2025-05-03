@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
@@ -9,8 +11,7 @@ readonly class WeakEnum implements CastsAttributes
 {
     public function __construct(
         private string $enumClass,
-    ) {
-    }
+    ) {}
 
     /**
      * Cast the given value.
@@ -23,6 +24,7 @@ readonly class WeakEnum implements CastsAttributes
         if (is_subclass_of($this->enumClass, \BackedEnum::class)) {
             $try = $this->enumClass::tryFrom($value);
         }
+
         return $try ?? $value;
     }
 
