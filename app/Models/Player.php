@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Casts\WeakEnum;
 use App\Enums\RoleEnum;
 use App\Enums\TeamEnum;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasTimestamps;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +29,8 @@ class Player extends Pivot
 
     protected $fillable = [];
 
+    protected $appends = ['has_won'];
+
     public function summoner(): BelongsTo
     {
         return $this->belongsTo(Summoner::class);
@@ -36,6 +39,17 @@ class Player extends Pivot
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
+    }
+
+    protected function hasWon(): Attribute
+    {
+        return Attribute::get(function () {
+            $winningTeam = $this->game()->first()->winning_riot_team_id;
+            if (isset($this->riot_team_id, $winningTeam, )) {
+                return $this->riot_team_id == $winningTeam;
+            }
+            return null;
+        })->shouldCache();
     }
 
     public function writtenReviews(): HasMany
