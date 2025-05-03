@@ -34,14 +34,7 @@ class Game extends Model
 
     public function summoners(): BelongsToMany
     {
-        return $this->belongsToMany(
-            Summoner::class,
-            'lol_players',
-            'riot_match_id',
-            'riot_summoner_id',
-            'riot_match_id',
-            'riot_summoner_id',
-        )->using(Player::class);
+        return $this->belongsToMany(Summoner::class, 'lol_players')->using(Player::class);
     }
 
     protected function casts(): array
