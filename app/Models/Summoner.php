@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 
 class Summoner extends Model
 {
     use HasFactory;
     use HasTimestamps;
     use HasUlids;
+    use Searchable;
 
     protected $table = 'lol_summoners';
 
@@ -50,5 +52,20 @@ class Summoner extends Model
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->user->name,
+            'tag' => $this->user->tag,
+            'summoner_icon' => $this->icon_id,
+            'region' => $this->region->value,
+        ];
+    }
+
+    protected function makeAllSearchableUsing(EloquentBuilder $query): EloquentBuilder
+    {
+        return $query->with('user');
     }
 }
