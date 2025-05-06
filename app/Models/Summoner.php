@@ -46,7 +46,7 @@ class Summoner extends Model
         return $this->belongsToMany(Game::class, 'lol_players')->using(Player::class);
     }
 
-    public function writtenReviews(): HasManyThrough
+    public function authoredReviews(): HasManyThrough
     {
         return $this->hasManyThrough(
             Review::class,
@@ -55,7 +55,7 @@ class Summoner extends Model
         );
     }
 
-    public function receivedReviews(): HasManyThrough
+    public function subjectedToReviews(): HasManyThrough
     {
         return $this->hasManyThrough(
             Review::class,

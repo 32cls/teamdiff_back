@@ -57,12 +57,12 @@ class Player extends Pivot
         })->shouldCache();
     }
 
-    public function writtenReviews(): HasMany
+    public function authoredReviews(): HasMany
     {
         return $this->hasMany(Review::class, 'author_player_id');
     }
 
-    public function receivedReviews(): HasMany
+    public function subjectedToReviews(): HasMany
     {
         return $this->hasMany(Review::class, 'subject_player_id');
     }
