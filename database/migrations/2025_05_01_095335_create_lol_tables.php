@@ -57,8 +57,8 @@ return new class extends Migration
 
         Schema::create('lol_reviews', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignIdFor(Player::class, 'author_id')->constrained();
-            $table->foreignIdFor(Player::class, 'subject_id')->constrained();
+            $table->foreignIdFor(Player::class, 'author_player_id')->constrained();
+            $table->foreignIdFor(Player::class, 'subject_player_id')->constrained();
             $table->text('content');
             $table->tinyInteger('rating');
 

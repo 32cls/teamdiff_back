@@ -59,12 +59,12 @@ class Player extends Pivot
 
     public function writtenReviews(): HasMany
     {
-        return $this->hasMany(Review::class, 'author_id');
+        return $this->hasMany(Review::class, 'author_player_id');
     }
 
     public function receivedReviews(): HasMany
     {
-        return $this->hasMany(Review::class, 'subject_id');
+        return $this->hasMany(Review::class, 'subject_player_id');
     }
 
     protected function casts(): array

@@ -26,12 +26,12 @@ class Review extends Model
 
     public function author(): BelongsTo
     {
-        return $this->belongsTo(Player::class, 'author_id');
+        return $this->belongsTo(Player::class, 'author_player_id');
     }
 
     public function subject(): BelongsTo
     {
-        return $this->belongsTo(Player::class, 'subject_id');
+        return $this->belongsTo(Player::class, 'subject_player_id');
     }
 
     protected function casts(): array
