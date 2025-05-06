@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Laravel\Scout\Searchable;
 
 class Summoner extends Model
@@ -43,6 +44,24 @@ class Summoner extends Model
     public function games(): BelongsToMany
     {
         return $this->belongsToMany(Game::class, 'lol_players')->using(Player::class);
+    }
+
+    public function writtenReviews(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Review::class,
+            Player::class,
+            secondKey: 'author_player_id',
+        );
+    }
+
+    public function receivedReviews(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Review::class,
+            Player::class,
+            secondKey: 'subject_player_id',
+        );
     }
 
     protected function casts(): array
