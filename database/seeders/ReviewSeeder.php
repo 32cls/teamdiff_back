@@ -17,13 +17,16 @@ class ReviewSeeder extends Seeder
     {
         foreach (Player::get()->random(DatabaseSeeder::$gameCount * 8) as $player) {
             $mates = $player->game->players->where('id', '!=', $player->id);
+            $reviews = collect();
 
             foreach ($mates->random(6) as $mate) {
-                Review::factory()
+                $reviews[] = Review::factory()
                     ->for($player, 'author')
                     ->for($mate, 'subject')
                     ->createOne();
             }
+
+            $reviews->random()->delete();
         }
     }
 }
