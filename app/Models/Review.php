@@ -24,7 +24,7 @@ class Review extends Model
 
     protected $keyType = 'string';
 
-    protected $fillable = [];
+    protected $fillable = ['content', 'rating'];
 
     public function author(): BelongsTo
     {
