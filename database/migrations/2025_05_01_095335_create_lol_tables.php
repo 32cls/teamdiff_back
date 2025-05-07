@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('riot_summoner_id')->unique();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->enum('region', RegionEnum::valueArray());
-            $table->string('icon_id');
+            $table->integer('icon_id');
             $table->integer('level');
             $table->timestamps();
 

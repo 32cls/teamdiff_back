@@ -19,7 +19,7 @@ class SummonerFactory extends Factory
         return [
             'riot_summoner_id' => Str::random(25),
             'region' => fake()->randomElement(RegionEnum::valueArray()),
-            'icon_id' => Str::random(5),
+            'icon_id' => fake()->numberBetween(1, 20),
             'level' => fake()->numberBetween(1, 1000),
         ];
     }
