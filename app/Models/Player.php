@@ -48,12 +48,9 @@ class Player extends Pivot
     protected function hasWon(): Attribute
     {
         return Attribute::get(function () {
-            $winningTeam = $this->game()->first()->winning_riot_team_id;
-            if (isset($this->riot_team_id, $winningTeam)) {
-                return $this->riot_team_id == $winningTeam;
-            }
-
-            return null;
+            return Game::whereId($this->game_id)
+                ->where('winning_riot_team_id', $this->riot_team_id)
+                ->exists();
         })->shouldCache();
     }
 
