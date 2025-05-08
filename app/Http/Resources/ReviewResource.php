@@ -15,10 +15,13 @@ class ReviewResource extends JsonResource
         /** @var Review $review */
         $review = $this->resource;
 
+        $review->load('author', 'subject');
+
         return $review->only([
             'id',
-            'author_player_id',
-            'subject_player_id',
+            'author',
+            'subject',
+            'is_from_ally',
             'content',
             'rating',
             'created_at',
