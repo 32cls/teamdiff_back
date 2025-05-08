@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReviewPostRequest;
 use App\Models\Review;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\Enums\FilterOperator;

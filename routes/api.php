@@ -18,7 +18,7 @@ Route::prefix('auth')
 Route::prefix('users')
     ->as('users.')
     ->middleware('auth')
-    ->group(function (){
+    ->group(function () {
         Route::get('me', [UserController::class, 'me'])
             ->name('show-me');
         Route::get('{region}/{name}/{tag}', [UserController::class, 'byRegionAndNameTag'])
@@ -35,4 +35,3 @@ Route::prefix('users')
                     ->name('store-for-user');
             });
     });
-
