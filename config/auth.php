@@ -114,4 +114,5 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    'should_mock' => (bool) env('SHOULD_MOCK_AUTH', false),
 ];
