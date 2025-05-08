@@ -41,8 +41,8 @@ return new class extends Migration
 
         Schema::create('lol_players', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignIdFor(Summoner::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Game::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Summoner::class);
             $table->string('riot_champion_name');
             $table->string('riot_team_id');
             $table->string('riot_role');
