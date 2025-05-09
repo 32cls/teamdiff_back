@@ -21,7 +21,7 @@ readonly class WeakEnum implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): mixed
     {
-        if (is_subclass_of($this->enumClass, \BackedEnum::class)) {
+        if (isset($value) && is_subclass_of($this->enumClass, \BackedEnum::class)) {
             $try = $this->enumClass::tryFrom($value);
         }
 

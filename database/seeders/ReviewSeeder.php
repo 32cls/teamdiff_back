@@ -23,7 +23,9 @@ class ReviewSeeder extends Seeder
                 $reviews[] = Review::factory()
                     ->for($player, 'author')
                     ->for($mate, 'subject')
-                    ->createOne();
+                    ->createOne([
+                        'is_from_ally' => $player->riot_team_id === $mate->riot_team_id,
+                    ]);
             }
 
             $reviews->random()->delete();

@@ -17,6 +17,7 @@ class ReviewFactory extends Factory
         return [
             'content' => fake()->text(fake()->numberBetween(20, 300)),
             'rating' => fake()->numberBetween(1, 5),
+            'is_from_ally' => fake()->boolean(),
         ];
     }
 }

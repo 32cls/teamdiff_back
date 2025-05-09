@@ -24,6 +24,7 @@ class PlayerFactory extends Factory
             'deaths' => fake()->numberBetween(0, 30),
             'assists' => fake()->numberBetween(0, 30),
             'level' => fake()->numberBetween(3, 18),
+            'has_won' => fake()->boolean(),
         ];
     }
 }

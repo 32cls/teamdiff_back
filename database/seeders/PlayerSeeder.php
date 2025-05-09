@@ -19,13 +19,19 @@ class PlayerSeeder extends Seeder
     public function run(): void
     {
         foreach (Game::all() as $game) {
-            $roleWinLoseSequence = collect(RoleEnum::valueArray())
+            $roleWinLoseSequence = collect(RoleEnum::cases())
                 ->shuffle()
-                ->crossJoin([TeamEnum::Blue, TeamEnum::Red])
-                ->map(fn (array $items) => [
-                    'riot_role' => $items[0],
-                    'riot_team_id' => $items[1],
-                ]);
+                ->crossJoin(TeamEnum::cases())
+                ->pipe(function ($c) {
+                    return $c;
+                })
+                ->map(function (array $items) use ($game) {
+                    return [
+                        'riot_role' => $items[0],
+                        'riot_team_id' => $items[1],
+                        'has_won' => $items[1] === $game->winning_riot_team_id,
+                    ];
+                });
 
             $summonerSequence = Summoner::all()
                 ->shuffle()

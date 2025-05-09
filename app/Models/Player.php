@@ -33,8 +33,6 @@ class Player extends Pivot
 
     protected $fillable = [];
 
-    protected $appends = ['has_won'];
-
     public function summoner(): BelongsTo
     {
         return $this->belongsTo(Summoner::class);
@@ -43,15 +41,6 @@ class Player extends Pivot
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
-    }
-
-    protected function hasWon(): Attribute
-    {
-        return Attribute::get(function () {
-            return Game::whereId($this->game_id)
-                ->where('winning_riot_team_id', $this->riot_team_id)
-                ->exists();
-        })->shouldCache();
     }
 
     public function authoredReviews(): HasMany
