@@ -25,7 +25,8 @@ class ReviewController
             ->allowedFilters(AllowedFilter::operator('rating', FilterOperator::DYNAMIC))
             ->allowedSorts('created_at', 'updated_at')
             ->simplePaginate()
-            ->withQueryString();
+            ->withQueryString()
+            ->toResourceCollection();
     }
 
     public function indexForUserAsSubject(User $user): ResourceCollection
