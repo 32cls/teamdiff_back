@@ -23,12 +23,14 @@ class User extends Model implements AuthenticatableContract
 
     protected $keyType = 'string';
 
+    protected $fillable = [];
+
+    protected $hidden = ['riot_puuid', 'access_token', 'refresh_token'];
+
     public function summoner(): HasOne
     {
         return $this->hasOne(Summoner::class);
     }
-
-    protected $fillable = [];
 
     protected function casts(): array
     {

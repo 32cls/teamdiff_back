@@ -31,6 +31,8 @@ class Summoner extends Model
 
     protected $fillable = [];
 
+    protected $hidden = ['riot_summoner_id'];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
