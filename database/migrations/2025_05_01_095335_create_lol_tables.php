@@ -50,6 +50,7 @@ return new class extends Migration
             $table->integer('deaths');
             $table->integer('assists');
             $table->integer('level');
+            $table->boolean('has_won');
             $table->timestamps();
 
             $table->unique(['summoner_id', 'game_id']);
@@ -57,10 +58,11 @@ return new class extends Migration
 
         Schema::create('lol_reviews', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignIdFor(Player::class, 'author_player_id')->constrained();
-            $table->foreignIdFor(Player::class, 'subject_player_id')->constrained();
+            $table->foreignIdFor(Player::class, 'author_player_id')->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Player::class, 'subject_player_id')->constrained()->cascadeOnDelete();
             $table->text('content');
             $table->tinyInteger('rating');
+            $table->boolean('is_from_ally');
 
             $table->softDeletes();
             $table->timestamps();
