@@ -16,22 +16,29 @@ class ReviewController
 {
     public function indexForUserAsAuthor(User $user): ResourceCollection
     {
-        return QueryBuilder::for($user->summoner->authoredReviews())
-            ->allowedFilters([
-                AllowedFilter::operator('rating', FilterOperator::DYNAMIC),
-            ])
-            ->paginate()
-            ->withQueryString()
-            ->toResourceCollection();
+        $reviewQuery = $user->summoner->authoredReviews()->with(
+            'author.summoner.user',
+            'subject.summoner.user',
+        );
+
+        return QueryBuilder::for($reviewQuery)
+            ->allowedFilters(AllowedFilter::operator('rating', FilterOperator::DYNAMIC))
+            ->allowedSorts('created_at', 'updated_at')
+            ->simplePaginate()
+            ->withQueryString();
     }
 
     public function indexForUserAsSubject(User $user): ResourceCollection
     {
-        return QueryBuilder::for($user->summoner->subjectedToReviews())
-            ->allowedFilters([
-                AllowedFilter::operator('rating', FilterOperator::DYNAMIC),
-            ])
-            ->paginate()
+        $reviewQuery = $user->summoner->subjectedToReviews()->with(
+            'author.summoner.user',
+            'subject.summoner.user',
+        );
+
+        return QueryBuilder::for($reviewQuery)
+            ->allowedFilters(AllowedFilter::operator('rating', FilterOperator::DYNAMIC))
+            ->allowedSorts('created_at', 'updated_at')
+            ->simplePaginate()
             ->withQueryString()
             ->toResourceCollection();
     }
@@ -39,8 +46,8 @@ class ReviewController
     public function storeForUser(ReviewPostRequest $request, User $user)
     {
         $review = Review::make($request->validated());
-        $review->author()->associate(auth()->id());
-        $review->subject()->associate($user);
+        $review->author_player_id = auth()->id();
+        $review->subject_player_id = $user->id;
 
         return $review->save()->toResource();
     }
