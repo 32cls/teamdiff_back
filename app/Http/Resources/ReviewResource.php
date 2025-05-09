@@ -15,7 +15,10 @@ class ReviewResource extends JsonResource
         /** @var Review $review */
         $review = $this->resource;
 
-        $review->load('author', 'subject');
+        $review->loadMissing(
+            'author.summoner.user',
+            'subject.summoner.user',
+        );
 
         return $review->only([
             'id',
@@ -26,7 +29,7 @@ class ReviewResource extends JsonResource
             'rating',
             'created_at',
             'updated_at',
-            ...$review->trashed() ? ['deleted_at'] : [],
+            'deleted_at',
         ]);
     }
 }
